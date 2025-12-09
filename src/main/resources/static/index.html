@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Sistema da Família</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+    <h1 id="tituloPagina"> Cadastro de Cliente</h1>
+
+    <input type="hidden" id="campoId">
+
+    <div>
+        <label>Nome:</label>
+        <input type="text" id="campoNome">
+    </div>
+    <br>
+    <div>
+        <label>CPF:</label>
+        <input type="text" id="campoCpf">
+    </div>
+
+    <div>
+        <label>Numero:</label>
+        <input type="text" id="campoNumero">
+    </div>
+
+    <div>
+        <label>Endereco:</label>
+        <input type="text" id="campoEndereco">
+    </div>
+
+    <br>
+    <button id="btnSalvar" onclick="cadastrar()">Salvar Cliente</button>
+</div>
+
+<hr> <h2>Lista de Clientes</h2>
+
+<table border="1" style="width: 100%; text-align: left;">
+    <thead>
+    <tr>
+        <th>Nome</th>
+        <th>CPF</th>
+        <th>Telefone</th>
+        <th>Endereço</th>
+        <th>Ações</th>
+    </tr>
+    </thead>
+    <tbody id="tabelaClientes">
+    </tbody>
+</table>
+
+<script>
+
+    let clientesAtuais = [];
+
+    function cadastrar() {
+        // 1. Pegar os dados (incluindo o ID escondido)
+        let idDigitado = document.getElementById("campoId").value;
+        let nomeDigitado = document.getElementById("campoNome").value;
+        let cpfDigitado = document.getElementById("campoCpf").value;
+        let numberDigitado = document.getElementById("campoNumero").value;
+        let addressDigitado = document.getElementById("campoEndereco").value;
+
+        cpfDigitado = cpfDigitado.replace(/\D/g, "");
+        numberDigitado = numberDigitado.replace(/\D/g, "");
+
+        if (nomeDigitado == ""){
+            alert("O nome é obrigatório!");
+            return;
+        }
+        if (cpfDigitado == ""){
+            alert("O CPF é obrigatório!");
+            return;
+        }
+        if (cpfDigitado.length != 11){
+            alert("O CPF Esta incorreto");
+            return;
+        }
+        if (numberDigitado == ""){
+            alert("O Numero é obrigatório");
+            return;
+        }
+        if ( numberDigitado.length != 11){
+            alert("O Numero esta incorreto");
+            return;
+        }
+
+        // 2. Montar o pacote de dados
+        let dados = {
+            id: idDigitado ? idDigitado : null, // O truque do ID!
+            name: nomeDigitado,
+            cpf: cpfDigitado,
+            number: numberDigitado,
+            address: addressDigitado
+        };
+
+        // 3. Enviar para o Java
+        fetch('/cliente', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(dados)
+        })
+            .then(resposta => resposta.text()) // O Java devolve um texto de sucesso
+            .then(texto => {
+                alert(texto); // Avisa o usuário
+
+                limparFormulario();
+                carregarClientes();
+            })
+            .catch(erro => console.error('Erro:', erro));
+    }
+
+    function carregarClientes() {
+        fetch('/clientes')
+            .then(resposta => resposta.json())
+            .then(listaClientes => {
+
+                clientesAtuais = listaClientes
+
+                let tabela = document.getElementById("tabelaClientes");
+                tabela.innerHTML = "";
+                listaClientes.forEach(cliente => {
+                    tabela.innerHTML += `
+                    <tr>
+                        <td>${cliente.name}</td>
+                        <td>${cliente.cpf}</td>
+                        <td>${cliente.number}</td>
+                        <td>${cliente.address}</td>
+                        <td>
+                           <button class="btn-editar" onclick="prepararEdicao(${cliente.id})">Editar</button>
+                           <button class="btn-excluir" onclick="excluir(${cliente.id})">Excluir</button>
+                        </td>
+                    </tr>
+                `;
+                });
+            })
+            .catch(erro => console.error('Erro:', erro));
+    }
+
+    carregarClientes();
+
+    function excluir(id) {
+        // É sempre bom confirmar antes de apagar!
+        if (confirm("Tens a certeza que queres eliminar este cliente?")) {
+
+            fetch(`/cliente/${id}`, {
+                method: 'DELETE'
+            })
+                .then(resposta => {
+                    if (resposta.ok) {
+                        alert("Cliente removido com sucesso!");
+                        // Recarregamos a lista para ver a tabela atualizada sem o cliente
+                        carregarClientes();
+                    } else {
+                        alert("Ops! Algo correu mal.");
+                    }
+                })
+                .catch(erro => console.error('Erro:', erro));
+        }
+    }
+
+    function prepararEdicao(id) {
+        // Rastreadores:
+        console.log("Tentando editar o ID:", id);
+        console.log("Minha memória de clientes tem:", clientesAtuais);
+
+        // Acha o cliente na lista pelo ID
+        let clienteEncontrado = clientesAtuais.find(c => c.id == id);
+
+        console.log("O resultado da busca foi:", clienteEncontrado);
+
+        if (clienteEncontrado) {
+            document.getElementById("tituloPagina").innerText = "Editar Cliente";
+            document.getElementById("btnSalvar").innerText = "Atualizar";
+            document.getElementById("campoId").value = clienteEncontrado.id;
+            document.getElementById("campoNome").value = clienteEncontrado.name;
+            document.getElementById("campoCpf").value = clienteEncontrado.cpf;
+            document.getElementById("campoNumero").value = clienteEncontrado.number;
+            document.getElementById("campoEndereco").value = clienteEncontrado.address;
+        }
+    }
+
+    function limparFormulario() {
+        // 1. Resetar o visual (Título e Botão)
+        document.getElementById("tituloPagina").innerText = "Cadastro de Cliente";
+        document.getElementById("btnSalvar").innerText = "Salvar Cliente";
+        document.getElementById("campoId").value = "";
+        document.getElementById("campoId").value = "";
+        document.getElementById("campoNome").value = "";
+        document.getElementById("campoCpf").value = "";
+        document.getElementById("campoNumero").value = "";
+        document.getElementById("campoEndereco").value = "";
+    }
+
+</script>
+
+</body>
+</html>
