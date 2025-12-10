@@ -5,13 +5,14 @@ body {
 
 /* O fundo vermelho que ocupa toda a largura */
 .cabecalho-topo {
-    background-color: #d9534f; /* Um vermelho suave e moderno */
-    color: white;
-    padding: 15px 40px; /* Altura e espaçamento lateral */
-    display: flex; /* O segredo para alinhar lado a lado */
-    justify-content: space-between; /* Empurra um grupo para cada ponta */
-    align-items: center; /* Centraliza verticalmente */
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2); /* Uma sombra leve em baixo */
+    background-color: #d9534f;
+    padding: 0 40px; /* Tirei o padding vertical */
+    height: 80px;    /* Altura fixa fininha e elegante */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative; /* IMPORTANTE: Segura os elementos absolutos */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
 
 /* Estilo dos Links */
@@ -30,13 +31,23 @@ body {
     text-decoration: underline;
 }
 
-/* Estilo da Logo (temporário até teres uma imagem) */
+.logo-imagem {
+    height: 250px; /* O tamanho grande que tu gostaste */
+    width: auto;
+
+    position: absolute; /* O segredo: sai do fluxo normal */
+    right: 25px;        /* Cola na direita */
+    top: 55%;           /* Tenta ir para o meio */
+    transform: translateY(-50%); /* Corrige para ficar exatamente no centro vertical */
+
+    /* Se a logo for muito grande, ela pode tapar coisas, então ajustamos o z-index */
+    z-index: 10;
+}
+
+/* Removemos o fundo translúcido antigo da logo-area para ficar mais limpo */
 .logo-area {
-    font-weight: bold;
-    font-size: 18px;
-    background-color: rgba(255,255,255,0.2); /* Um fundinho translúcido */
-    padding: 5px 15px;
-    border-radius: 4px;
+    padding: 0;
+    background-color: transparent;
 }
 
 .container {
