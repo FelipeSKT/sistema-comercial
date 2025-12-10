@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sistema da Familia</title>
+    <link rel="stylesheet" href="produtos.css">
+</head>
+<body>
+
+<header class="cabecalho-topo">
+    <nav class="links-navegacao">
+        <a href="/index.html">Gerir Clientes</a>
+        <a href="/produtos.html">Gerir Produtos</a>
+    </nav>
+
+    <div class="logo-area">
+        <span>Sua Logo Aqui</span> 📦
+    </div>
+</header>
+
+<br>
+
+<div class="container">
+    <h1 id="tituloPagina"> Cadastro de Produto</h1>
+
+    <input type="hidden" id="campoId">
+
+    <div class="form-grid">
+
+        <div class="full-width">
+            <label>Nome:</label>
+            <input type="text" id="campoNome">
+        </div>
+
+        <div>
+            <label>Fabricante:</label>
+            <input type="text" id="campoFabricante">
+        </div>
+
+        <div>
+            <label>Categoria Principal:</label>
+            <input type="text" id="campoCategoriaPrincipal">
+        </div>
+
+        <div>
+            <label>Categoria Segundaria:</label>
+            <input type="text" id="campoCategoriaSegundaria">
+        </div>
+
+        <div>
+            <label>Embalagem:</label>
+            <input type="text" id="campoEmbalagem">
+        </div>
+
+        <div>
+            <label>Unidade por Embalagem:</label>
+            <input type="number" id="campoUnidadeEmbalagem">
+        </div>
+
+        <div>
+            <label>Preço por Embalagem:</label>
+            <input type="number" id="campoPrecoEmbalagem" step="0.01">
+        </div>
+
+        <div>
+            <label>Preço por Unidade:</label>
+            <input type="number" id="campoPrecoUnidade" step="0.01">
+        </div>
+
+        <div>
+            <label>Descrição:</label>
+            <input type="text" id="campoDescricao">
+        </div>
+    </div>
+
+    <br>
+    <button id="btnSalvar" onclick="cadastrar()">Salvar Produto</button>
+</div>
+
+<hr> <h2>Lista de Produtos</h2>
+
+<table border="1" style="width: 100%; text-align: left;">
+    <thead>
+    <tr>
+        <th>Nome</th>
+        <th>Fabricante</th>
+        <th>Categoria Principal</th>
+        <th>Preço Unidade</th>
+        <th>Preço Embalagem</th>
+        <th>Ações</th>
+    </tr>
+    </thead>
+    <tbody id="tabelaProdutos">
+    </tbody>
+</table>
+
+<div id="modalOverlay" class="modal-fundo">
+    <div class="modal-caixa">
+        <span class="fechar" onclick="fecharModal()">&times;</span>
+
+        <h2>Detalhes do Produto</h2>
+        <hr>
+
+        <p><strong>Nome:</strong> <span id="mNome"></span></p>
+        <p><strong>Fabricante:</strong> <span id="mFabricante"></span></p>
+        <p><strong>Categoria Principal:</strong> <span id="mCategoriaP"></span></p>
+        <p><strong>Categoria Segundaria:</strong> <span id="mCategoriaS"></span></p>
+        <p><strong>Embalagem:</strong> <span id="mEmbalagem"></span></p>
+        <p><strong>Unidade/Embalagem:</strong> <span id="mUnidadeE"></span></p>
+        <p><strong>Preço/Embalagem:</strong> <span id="mPrecoE"></span></p>
+        <p><strong>Preço/Unidade:</strong> <span id="mPrecoU"></span></p>
+        <p><strong>Descrição:</strong> <span id="mDescricao"></span></p>
+
+
+        <br>
+        <button onclick="fecharModal()" style="background-color: #6c757d;">Fechar</button>
+    </div>
+</div>
+
+<script>
+
+    let produtosAtuais = []
+
+    function cadastrar() {
+        // 1. Pegar os dados (incluindo o ID escondido)
+        let idDigitado = document.getElementById("campoId").value;
+        let nomeDigitado = document.getElementById("campoNome").value;
+        let fabricanteDigitado = document.getElementById("campoFabricante").value;
+        let categoriaPrincipalDigitado = document.getElementById("campoCategoriaPrincipal").value;
+        let categoriaSegundariaDigitado = document.getElementById("campoCategoriaSegundaria").value;
+        let embalagemDigitado = document.getElementById("campoEmbalagem").value;
+        let unidadeEmbalagemDigitado = document.getElementById("campoUnidadeEmbalagem").value;
+        let precoEmbalagemDigitado = document.getElementById("campoPrecoEmbalagem").value;
+        let precoUnidadeDigitado = document.getElementById("campoPrecoUnidade").value;
+        let descricaoDigitado = document.getElementById("campoDescricao").value;
+
+        if (nomeDigitado == ""){
+            alert("O nome é obrigatório!");
+            return;
+        }
+        if (fabricanteDigitado == "") {
+            alert("O Fabricante é obrigatório!");
+            return;
+        }
+        if (categoriaPrincipalDigitado == "") {
+            alert("A Categoria Principal é obrigatório!");
+            return;
+        }
+        if (categoriaSegundariaDigitado == "") {
+            alert("A Categoria Segunaria é obrigatório!");
+            return;
+        }
+        if (embalagemDigitado == "") {
+            alert("A embalagem é obrigatório!");
+            return;
+        }
+        if (unidadeEmbalagemDigitado == "") {
+            alert("A unidade por embalagem é obrigatório!");
+            return;
+        }
+        if (precoEmbalagemDigitado == "") {
+            alert("O preço por embalagem é obrigatório!");
+            return;
+        }
+        if (descricaoDigitado == "") {
+            alert("O preço por unidade é obrigatório!");
+            return;
+        }
+
+        let dados = {
+            id: idDigitado ? idDigitado : null,
+            name: nomeDigitado,
+            manufacturer: fabricanteDigitado,
+            mainCategory: categoriaPrincipalDigitado,
+            secondCategory: categoriaSegundariaDigitado,
+            packaging: embalagemDigitado,
+            unitPackSize: unidadeEmbalagemDigitado,
+            packPrice: precoEmbalagemDigitado,
+            unitPrice: precoUnidadeDigitado,
+            description: descricaoDigitado
+        };
+
+        // 3. Enviar para o Java
+        fetch('/produto', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(dados)
+        })
+            .then(resposta => resposta.text())
+            .then(texto => {
+                alert(texto);
+
+                limparFormulario();
+                carregarProdutos();
+            })
+            .catch(erro => console.error('Erro:', erro));
+    }
+
+    function carregarProdutos() {
+        fetch('/produtos')
+            .then(resposta => resposta.json())
+            .then(listaProdutos => {
+
+                produtosAtuais = listaProdutos
+
+                let tabela = document.getElementById("tabelaProdutos");
+                tabela.innerHTML = "";
+                listaProdutos.forEach(produto => {
+
+                    let formatador = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+                    let precoUnidadeFormatado = formatador.format(produto.unitPrice);
+                    let precoPacoteFormatado = formatador.format(produto.packPrice);
+
+                    tabela.innerHTML += `
+                    <tr>
+                        <td>${produto.name}</td>
+                        <td>${produto.manufacturer}</td>
+                        <td>${produto.mainCategory}</td>
+                        <td>${precoUnidadeFormatado}</td>
+                        <td>${precoPacoteFormatado}</td>
+                        <td>
+                           <button class="btn-extra" onclick="verDetalhes(${produto.id})">Info</button>
+                           <button class="btn-editar" onclick="prepararEdicao(${produto.id})">Editar</button>
+                           <button class="btn-excluir" onclick="excluir(${produto.id})">Excluir</button>
+                        </td>
+                    </tr>
+                `;
+                });
+            })
+            .catch(erro => console.error('Erro:', erro));
+    }
+
+    carregarProdutos();
+
+    function excluir(id) {
+        // É sempre bom confirmar antes de apagar!
+        if (confirm("Tens a certeza que queres eliminar este produto?")) {
+
+            fetch(`/produto/${id}`, {
+                method: 'DELETE'
+            })
+                .then(resposta => {
+                    if (resposta.ok) {
+                        alert("Produto removido com sucesso!");
+                        // Recarregamos a lista para ver a tabela atualizada sem o cliente
+                        carregarProdutos();
+                    } else {
+                        alert("Ops! Algo correu mal.");
+                    }
+                })
+                .catch(erro => console.error('Erro:', erro));
+        }
+    }
+
+    function prepararEdicao(id) {
+        // Rastreadores:
+        console.log("Tentando editar o ID:", id);
+        console.log("Minha memória de produtos tem:", produtosAtuais);
+
+        let produtoEncontrado = produtosAtuais.find(p => p.id == id);
+
+        console.log("O resultado da busca foi:", produtoEncontrado);
+
+        if (produtoEncontrado) {
+            document.getElementById("tituloPagina").innerText = "Editar Produto";
+            document.getElementById("btnSalvar").innerText = "Atualizar";
+            document.getElementById("campoId").value = produtoEncontrado.id;
+            document.getElementById("campoNome").value = produtoEncontrado.name;
+            document.getElementById("campoFabricante").value = produtoEncontrado.manufacturer;
+            document.getElementById("campoCategoriaPrincipal").value = produtoEncontrado.mainCategory;
+            document.getElementById("campoCategoriaSegundaria").value = produtoEncontrado.secondCategory;
+            document.getElementById("campoEmbalagem").value = produtoEncontrado.packaging;
+            document.getElementById("campoUnidadeEmbalagem").value = produtoEncontrado.unitPackSize;
+            document.getElementById("campoPrecoEmbalagem").value = produtoEncontrado.packPrice;
+            document.getElementById("campoPrecoUnidade").value = produtoEncontrado.unitPrice;
+            document.getElementById("campoDescricao").value = produtoEncontrado.description;
+        }
+    }
+
+    function limparFormulario() {
+        document.getElementById("tituloPagina").innerText = "Cadastro de Produto";
+        document.getElementById("btnSalvar").innerText = "Salvar Produto";
+        document.getElementById("campoId").value = "";
+        document.getElementById("campoNome").value = "";
+        document.getElementById("campoFabricante").value = "";
+        document.getElementById("campoCategoriaPrincipal").value = "";
+        document.getElementById("campoCategoriaSegundaria").value = "";
+        document.getElementById("campoEmbalagem").value = "";
+        document.getElementById("campoUnidadeEmbalagem").value = "";
+        document.getElementById("campoPrecoEmbalagem").value = "";
+        document.getElementById("campoPrecoUnidade").value = "";
+        document.getElementById("campoDescricao").value = "";
+    }
+
+    function verDetalhes(id) {
+        // 1. Procurar o produto na nossa lista de memória
+        let produto = produtosAtuais.find(p => p.id == id);
+
+        if (produto) {
+            // 2. Preencher os espaços em branco (spans) com os dados
+            document.getElementById('mNome').innerText = produto.name;
+            document.getElementById('mFabricante').innerText = produto.manufacturer;
+            document.getElementById('mCategoriaP').innerText = produto.mainCategory;
+            document.getElementById('mCategoriaS').innerText = produto.secondCategory;
+            document.getElementById('mEmbalagem').innerText = produto.packaging;
+            document.getElementById('mUnidadeE').innerText = produto.unitPackSize;
+            let formatador = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+            document.getElementById('mPrecoE').innerText = formatador.format(produto.packPrice);
+            document.getElementById('mPrecoU').innerText = formatador.format(produto.unitPrice);
+            document.getElementById('mDescricao').innerText = produto.description;
+
+            // 3. Mostrar a janela (mudamos de 'none' para 'block')
+            document.getElementById('modalOverlay').style.display = 'block';
+        }
+    }
+
+    function fecharModal() {
+        // Esconde a janela novamente
+        document.getElementById('modalOverlay').style.display = 'none';
+    }
+
+    // Truque Extra: Fechar se clicar na parte escura (fora da caixa branca)
+    window.onclick = function(event) {
+        let modal = document.getElementById('modalOverlay');
+        if (event.target == modal) {
+            fecharModal();
+        }
+    }
+
+</script>
+
+</body>
+</html>
