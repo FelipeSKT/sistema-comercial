@@ -114,3 +114,39 @@ tr:nth-child(even) {
 tr:hover {
     background-color: #e2e6ea;
 }
+
+/* O fundo vermelho que ocupa toda a largura */
+.cabecalho-topo {
+    background-color: #d9534f; /* Um vermelho suave e moderno */
+    color: white;
+    padding: 15px 40px; /* Altura e espaçamento lateral */
+    display: flex; /* O segredo para alinhar lado a lado */
+    justify-content: space-between; /* Empurra um grupo para cada ponta */
+    align-items: center; /* Centraliza verticalmente */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2); /* Uma sombra leve em baixo */
+}
+
+/* Estilo dos Links */
+.links-navegacao a {
+    color: white;
+    text-decoration: none; /* Tira o sublinhado feio */
+    font-weight: bold;
+    margin-right: 20px; /* Espaço entre os links */
+    font-size: 16px;
+    opacity: 0.9;
+    transition: opacity 0.3s;
+}
+
+.links-navegacao a:hover {
+    opacity: 1; /* Brilha mais ao passar o mouse */
+    text-decoration: underline;
+}
+
+/* Estilo da Logo (temporário até teres uma imagem) */
+.logo-area {
+    font-weight: bold;
+    font-size: 18px;
+    background-color: rgba(255,255,255,0.2); /* Um fundinho translúcido */
+    padding: 5px 15px;
+    border-radius: 4px;
+}
