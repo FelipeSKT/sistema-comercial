@@ -20,6 +20,7 @@ public class ClienteController {
         return repository.findAll();
     }
 
+    @GetMapping("/clienteserver")
     public String dizerOla() {
         return "Olá! O sistema está online.";
     }
