@@ -11,7 +11,7 @@
     <nav class="links-navegacao">
         <a href="/index.html">Gerir Clientes</a>
         <a href="/produtos.html">Gerir Produtos</a>
-        <a href="/estoque.html">Gerir Stock</a>
+        <a href="/estoque.html">Gerir Estoque</a>
     </nav>
     <div class="logo-area">
         <img src="/img/logo.png" alt="Logo Rinamed" class="logo-imagem">
@@ -23,6 +23,15 @@
 <div class="container">
     <h1>Controle do Estoque</h1>
 
+    <div style="margin-top: 30px; margin-bottom: 20px; display: flex;">
+        <input type="text" id="campoBuscaStock" placeholder="Buscar por Nome ou Fabricante..."
+               onkeyup="if(event.keyCode === 13) carregarTabelaStock()">
+        <button onclick="carregarTabelaStock()"
+                style="width: auto; padding: 10px 15px; margin-left: 10px; background-color: #6c757d; color: white; border-radius: 4px;">
+            🔍 Buscar
+        </button>
+    </div>
+
     <table border="1" style="width: 100%; text-align: left; margin-top: 20px;">
         <thead>
         <tr>
@@ -30,7 +39,7 @@
             <th>Fabricante</th>
             <th>Saldo Atual</th>
             <th>Caixas (Aprox.)</th>
-            <th style="width: 15%;">Stock Mínimo</th> <th style="text-align: center; width: 15%;">Ações</th>
+            <th style="width: 15%;">Estoque Mínimo</th> <th style="text-align: center; width: 15%;">Ações</th>
         </tr>
         </thead>
         <tbody id="tabelaStock">
@@ -42,7 +51,7 @@
     <div class="modal-caixa" style="padding: 30px;">
         <span class="fechar" onclick="fecharModal()">&times;</span>
 
-        <h2 id="tituloModal">Gerir Stock: <span id="nomeProdutoModal">...</span></h2>
+        <h2 id="tituloModal">Gerir Estoque: <span id="nomeProdutoModal">...</span></h2>
         <hr>
 
         <div class="form-grid" style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
@@ -105,7 +114,15 @@
 
     // 1. Carrega a lista principal
     function carregarTabelaStock() {
-        fetch('/produtos')
+        let termoBusca = document.getElementById("campoBuscaStock").value;
+        let url = '/produtos';
+
+        if (termoBusca) {
+            // Adiciona o parâmetro de busca à URL
+            url = `/produtos?q=${encodeURIComponent(termoBusca)}`;
+        }
+
+        fetch(url) // Usa a URL com ou sem o parâmetro 'q'
             .then(resposta => resposta.json())
             .then(lista => {
                 produtosCache = lista;

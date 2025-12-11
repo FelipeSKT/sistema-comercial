@@ -11,7 +11,7 @@
     <nav class="links-navegacao">
         <a href="/index.html">Gerir Clientes</a>
         <a href="/produtos.html">Gerir Produtos</a>
-        <a href="/estoque.html">Gerir Stock</a>
+        <a href="/estoque.html">Gerir Estoque</a>
     </nav>
 
     <div class="logo-area">
@@ -47,6 +47,15 @@
 
     <br>
     <button id="btnSalvar" onclick="cadastrar()">Salvar Cliente</button>
+</div>
+
+<div style="margin-top: 30px; margin-bottom: 20px; display: flex;">
+    <input type="text" id="campoBuscaCliente" placeholder="Buscar por Nome ou CPF..."
+           onkeyup="if(event.keyCode === 13) carregarClientes()">
+    <button onclick="carregarClientes()"
+            style="width: auto; padding: 10px 15px; margin-left: 10px; background-color: #6c757d; color: white; border-radius: 4px;">
+        🔍 Buscar
+    </button>
 </div>
 
 <hr> <h2>Lista de Clientes</h2>
@@ -129,7 +138,15 @@
     }
 
     function carregarClientes() {
-        fetch('/clientes')
+        let termoBusca = document.getElementById("campoBuscaCliente").value;
+        let url = '/clientes';
+
+        if (termoBusca) {
+            // Adiciona o parâmetro de busca à URL
+            url = `/clientes?q=${encodeURIComponent(termoBusca)}`;
+        }
+
+        fetch(url) // Usa a URL com ou sem o parâmetro 'q'
             .then(resposta => resposta.json())
             .then(listaClientes => {
 

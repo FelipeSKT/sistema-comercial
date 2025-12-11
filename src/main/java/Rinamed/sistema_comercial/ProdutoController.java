@@ -12,8 +12,13 @@ public class ProdutoController {
     private ProdutoRepository repository;
 
     @GetMapping("/produtos")
-    public List<Produto> listar() {
-        return repository.findAll();
+    // MODIFICADO: Aceita um parâmetro de pesquisa 'q' (opcional)
+    public List<Produto> listar(@RequestParam(required = false) String q) {
+        if (q != null && !q.isEmpty()) {
+            // Se houver termo, busca pelo nome OU fabricante
+            return repository.findByNameContainingIgnoreCaseOrManufacturerContainingIgnoreCase(q, q);
+        }
+        return repository.findAll(); // Senão, devolve tudo (comportamento original)
     }
 
     @GetMapping("/produtoserver")

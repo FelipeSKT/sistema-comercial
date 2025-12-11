@@ -16,8 +16,13 @@ public class ClienteController {
     private ClienteRepository repository;
 
     @GetMapping("/clientes")
-    public List<Cliente> listar() {
-        return repository.findAll();
+    // MODIFICADO: Aceita um parâmetro de pesquisa 'q' (opcional)
+    public List<Cliente> listar(@RequestParam(required = false) String q) {
+        if (q != null && !q.isEmpty()) {
+            // Se houver termo, busca por nome OU CPF
+            return repository.findByNameContainingIgnoreCaseOrCpfContaining(q, q);
+        }
+        return repository.findAll(); // Senão, devolve tudo
     }
 
     @GetMapping("/clienteserver")

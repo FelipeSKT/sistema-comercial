@@ -11,7 +11,7 @@
     <nav class="links-navegacao">
         <a href="/index.html">Gerir Clientes</a>
         <a href="/produtos.html">Gerir Produtos</a>
-        <a href="/estoque.html">Gerir Stock</a>
+        <a href="/estoque.html">Gerir Estoque</a>
     </nav>
 
     <div class="logo-area">
@@ -76,6 +76,14 @@
 
     <br>
     <button id="btnSalvar" onclick="cadastrar()">Salvar Produto</button>
+</div>
+
+<div style="margin-top: 30px; margin-bottom: 20px; display: flex;">
+    <input type="text" id="campoBuscaProduto" placeholder="Buscar por Nome ou Fabricante..."
+           onkeyup="if(event.keyCode === 13) carregarProdutos()"> <button onclick="carregarProdutos()"
+                                                                          style="width: auto; padding: 10px 15px; margin-left: 10px; background-color: #6c757d; color: white; border-radius: 4px;">
+    🔍 Buscar
+</button>
 </div>
 
 <hr> <h2>Lista de Produtos</h2>
@@ -200,7 +208,14 @@
     }
 
     function carregarProdutos() {
-        fetch('/produtos')
+        let termoBusca = document.getElementById("campoBuscaProduto").value;
+        let url = '/produtos';
+
+        if (termoBusca) {
+            // Adiciona o parâmetro de busca à URL
+            url = `/produtos?q=${encodeURIComponent(termoBusca)}`;
+        }
+        fetch(url)
             .then(resposta => resposta.json())
             .then(listaProdutos => {
 
