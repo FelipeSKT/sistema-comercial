@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestão de Estoque</title>
+    <link rel="stylesheet" href="estoque.css">
+</head>
+<body>
+
+<header class="cabecalho-topo">
+    <nav class="links-navegacao">
+        <a href="/index.html">Gerir Clientes</a>
+        <a href="/produtos.html">Gerir Produtos</a>
+        <a href="/estoque.html">Gerir Stock</a>
+    </nav>
+    <div class="logo-area">
+        <img src="/img/logo.png" alt="Logo Rinamed" class="logo-imagem">
+    </div>
+</header>
+
+<br>
+
+<div class="container">
+    <h1>Controle do Estoque</h1>
+
+    <table border="1" style="width: 100%; text-align: left; margin-top: 20px;">
+        <thead>
+        <tr>
+            <th>Produto</th>
+            <th>Fabricante</th>
+            <th>Saldo Atual</th>
+            <th>Caixas (Aprox.)</th>
+            <th style="width: 15%;">Stock Mínimo</th> <th style="text-align: center; width: 15%;">Ações</th>
+        </tr>
+        </thead>
+        <tbody id="tabelaStock">
+        </tbody>
+    </table>
+</div>
+
+<div id="modalMovimentacao" class="modal-fundo">
+    <div class="modal-caixa" style="padding: 30px;">
+        <span class="fechar" onclick="fecharModal()">&times;</span>
+
+        <h2 id="tituloModal">Gerir Stock: <span id="nomeProdutoModal">...</span></h2>
+        <hr>
+
+        <div class="form-grid" style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+            <input type="hidden" id="idProdutoMov">
+
+            <div>
+                <label>Tipo de Movimento:</label>
+                <select id="tipoMov" style="width: 100%; padding: 10px;">
+                    <option value="ENTRADA">🟢 Entrada (Compra/Devolução)</option>
+                    <option value="SAIDA">🔴 Saída (Venda/Perda)</option>
+                </select>
+            </div>
+
+            <div>
+                <label>Quantidade:</label>
+                <input type="number" id="qtdMov" min="1" placeholder="0">
+            </div>
+
+            <div style="display: flex; align-items: center; margin-top: 15px; margin-bottom: 15px;">
+                <label class="switch">
+                    <input type="checkbox" id="checkEmbalagem">
+                    <span class="slider"></span>
+                </label>
+                <label style="margin: 0; cursor: pointer;">Contabilizar por Embalagem?</label>
+            </div>
+
+            <div class="full-width">
+                <label>Descrição / Motivo:</label>
+                <textarea id="descMov"
+                          rows="4"
+                          placeholder="Ex: Nota Fiscal 123&#10;Linha 2: Recebido por João&#10;Linha 3: Caixa estava amassada"
+                          style="width: 100%; padding: 10px; resize: vertical; font-family: Arial, sans-serif; border: 1px solid #ccc; border-radius: 4px;"></textarea>
+            </div>
+
+            <div class="full-width">
+                <button id="btnRegistrar" style="background-color: #ffc107; color: black; font-weight: bold;" onclick="registrarMovimento()">Confirmar Movimentação</button>
+            </div>
+        </div>
+
+        <h3>Histórico deste Produto</h3>
+        <div style="max-height: 250px; overflow-y: auto; border: 1px solid #ddd;">
+            <table style="width: 100%; font-size: 14px;">
+                <thead style="position: sticky; top: 0;">
+                <tr>
+                    <th>Data/Hora</th>
+                    <th>Tipo</th>
+                    <th>Qtd</th>
+                    <th>Descrição</th>
+                </tr>
+                </thead>
+                <tbody id="tabelaHistorico">
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    let produtosCache = [];
+
+    // 1. Carrega a lista principal
+    function carregarTabelaStock() {
+        fetch('/produtos')
+            .then(resposta => resposta.json())
+            .then(lista => {
+                produtosCache = lista;
+                let tabela = document.getElementById("tabelaStock");
+                tabela.innerHTML = "";
+
+                lista.forEach(p => {
+                    // Proteção caso o saldo venha nulo (null)
+                    let saldo = p.quantidadeEstoque ? p.quantidadeEstoque : 0;
+                    let minimo = p.estoqueMinimo ? p.estoqueMinimo : 0;
+
+                    // LÓGICA NOVA: Calcular caixas
+                    // Se tiver tamanho de embalagem, dividimos. Senão, mostramos um traço.
+                    let qtdCaixas = p.unitPackSize ? Math.floor(saldo / p.unitPackSize) : "-";
+
+                    // ALERTA VISUAL: Se o saldo for menor que o mínimo, fica vermelho!
+                    let estiloSaldo = saldo < minimo ? "color: red; font-weight: bold;" : "color: green;";
+                    tabela.innerHTML += `
+                        <tr>
+                            <td>${p.name}</td>
+                            <td>${p.manufacturer}</td>
+                            <td style="${estiloSaldo}">${saldo}</td>
+                            <td>${qtdCaixas}</td>
+                            <td>
+                                <input type="number"
+                                       value="${minimo}"
+                                       min="0"
+                                       style="width: 60px;"
+                                       onchange="salvarMinimo(${p.id}, this.value)">
+                            </td>
+                            <td style="text-align: center;">
+                                <button class="btn-editar" style="background-color: #17a2b8;" onclick="abrirGestao(${p.id})">Gerir</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            });
+    }
+
+    // 2. Abre o Modal e carrega o histórico
+    function abrirGestao(id) {
+        let produto = produtosCache.find(p => p.id == id);
+
+        document.getElementById("idProdutoMov").value = produto.id;
+        document.getElementById("nomeProdutoModal").innerText = produto.name;
+        document.getElementById("modalMovimentacao").style.display = 'block';
+
+        carregarHistorico(id);
+    }
+    let historicoAtualCache = [];
+
+    function carregarHistorico(id) {
+        fetch(`/movimentacoes/${id}`)
+            .then(resp => resp.json())
+            .then(listaHist => {
+                // Guardamos na memória para usar depois
+                historicoAtualCache = listaHist;
+
+                let tab = document.getElementById("tabelaHistorico");
+                tab.innerHTML = "";
+
+                listaHist.sort((a, b) => new Date(b.dataHora) - new Date(a.dataHora));
+
+                // O truque aqui é usar o INDEX (i) para saber qual botão foi clicado
+                listaHist.forEach((h, index) => {
+                    let dataFormatada = new Date(h.dataHora).toLocaleString('pt-BR');
+                    let corTipo = h.tipo == 'ENTRADA' ? 'green' : 'red';
+
+                    // Botão "Ler" em vez do texto direto
+                    let botaoDescricao = h.descricao
+                        ? `<button class="btn-extra" style="padding: 5px 10px; font-size: 12px;" onclick="verDescricao(${index})">Ler Nota</button>`
+                        : `<span style="color: #ccc;">-</span>`;
+
+                    tab.innerHTML += `
+                        <tr>
+                            <td>${dataFormatada}</td>
+                            <td style="color: ${corTipo}; font-weight: bold;">${h.tipo}</td>
+                            <td>${h.quantidade}</td>
+                            <td>${botaoDescricao}</td>
+                        </tr>
+                    `;
+                });
+            });
+    }
+
+    function verDescricao(index) {
+        // Vai buscar o texto à memória usando o índice
+        let texto = historicoAtualCache[index].descricao;
+
+        document.getElementById("textoDescricaoCompleta").innerText = texto;
+        document.getElementById("modalDescricao").style.display = 'block';
+    }
+
+    function fecharModalDescricao() {
+        document.getElementById("modalDescricao").style.display = 'none';
+    }
+
+    // 3. Envia a nova movimentação para o Java
+    function registrarMovimento() {
+        let dados = {
+            produtoId: document.getElementById("idProdutoMov").value,
+            tipo: document.getElementById("tipoMov").value,
+            quantidade: document.getElementById("qtdMov").value,
+            descricao: document.getElementById("descMov").value,
+            porEmbalagem: document.getElementById("checkEmbalagem").checked
+        };
+
+        if(!dados.quantidade || dados.quantidade <= 0) {
+            alert("A quantidade deve ser maior que zero!");
+            return;
+        }
+
+        fetch('/movimentacao', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(dados)
+        })
+            .then(async resposta => {
+                if(resposta.ok) {
+                    alert(await resposta.text());
+                    // Limpa os campos
+                    document.getElementById("qtdMov").value = "";
+                    document.getElementById("descMov").value = "";
+                    document.getElementById("checkEmbalagem").checked = false;
+                    // Recarrega tudo para vermos o saldo e o histórico atualizados
+                    carregarHistorico(dados.produtoId);
+                    carregarTabelaStock();
+                } else {
+                    // Se der erro (ex: stock insuficiente), mostramos a mensagem
+                    alert("Erro: " + await resposta.text()); // Aqui o Java pode mandar um JSON de erro, dependendo da config, mas vamos tentar ler o texto
+                }
+            })
+            .catch(erro => console.error(erro));
+    }
+
+    function fecharModal() {
+        document.getElementById("modalMovimentacao").style.display = 'none';
+    }
+
+    function salvarMinimo(id, novoValor) {
+        // CORREÇÃO: Se a caixa estiver vazia, assumimos que é 0
+        if (!novoValor || novoValor === "") {
+            novoValor = 0;
+        }
+
+        fetch(`/produto/minimo/${id}`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: novoValor // Agora enviamos sempre um número (0 ou outro)
+        })
+            .then(resp => {
+                if(resp.ok) {
+                    console.log("Mínimo atualizado!");
+                    // Recarregamos a tabela para:
+                    // 1. O "0" aparecer escrito na caixinha (em vez de ficar vazia)
+                    // 2. Atualizar as cores de aviso (vermelho/verde)
+                    carregarTabelaStock();
+                } else {
+                    alert("Erro ao salvar mínimo.");
+                }
+            });
+    }
+
+    carregarTabelaStock();
+
+</script>
+
+<div id="modalDescricao" class="modal-fundo" style="z-index: 2000;"> <div class="modal-caixa" style="padding: 30px;">
+    <span class="fechar" onclick="fecharModalDescricao()">&times;</span>
+    <h3>Descrição do Movimento</h3>
+    <hr>
+    <p id="textoDescricaoCompleta" style="font-size: 16px; line-height: 1.5; color: #333; margin-top: 20px; white-space: pre-wrap;"></p>
+    <br>
+    <button onclick="fecharModalDescricao()" style="width: 100%; background-color: #6c757d;">Fechar</button>
+</div>
+</div>
+
+</body>
+</html>

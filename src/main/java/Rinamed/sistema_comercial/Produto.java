@@ -24,6 +24,25 @@ import jakarta.persistence.Id;
         private BigDecimal unitPrice;
         private String description;
 
+        private Integer quantidadeEstoque = 0; // Começa a zero por defeito
+        private Integer estoqueMinimo =0;
+
+        public Integer getEstoqueMinimo() {
+            return estoqueMinimo;
+        }
+
+        public void setEstoqueMinimo(Integer estoqueMinimo) {
+            this.estoqueMinimo = estoqueMinimo;
+        }
+
+        public Integer getQuantidadeEstoque() {
+            return quantidadeEstoque;
+        }
+
+        public void setQuantidadeEstoque(Integer quantidadeEstoque) {
+            this.quantidadeEstoque = quantidadeEstoque;
+        }
+
         // Getters e Setters
         public Long getId() {
             return id;

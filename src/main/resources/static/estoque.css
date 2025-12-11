@@ -1,0 +1,304 @@
+body {
+    background-color: #f0f2f5; /* Um cinza muito suave */
+    font-family: Arial, sans-serif; /* Muda a fonte para ficar mais moderna */
+}
+
+/* O fundo vermelho que ocupa toda a largura */
+.cabecalho-topo {
+    background-color: #d9534f;
+    padding: 0 40px; /* Tirei o padding vertical */
+    height: 80px;    /* Altura fixa fininha e elegante */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative; /* IMPORTANTE: Segura os elementos absolutos */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+/* Estilo dos Links */
+.links-navegacao a {
+    color: white;
+    text-decoration: none; /* Tira o sublinhado feio */
+    font-weight: bold;
+    margin-right: 20px; /* Espaço entre os links */
+    font-size: 16px;
+    opacity: 0.9;
+    transition: opacity 0.3s;
+}
+
+.links-navegacao a:hover {
+    opacity: 1; /* Brilha mais ao passar o mouse */
+    text-decoration: underline;
+}
+
+.logo-imagem {
+    height: 250px; /* O tamanho grande que tu gostaste */
+    width: auto;
+
+    position: absolute; /* O segredo: sai do fluxo normal */
+    right: 25px;        /* Cola na direita */
+    top: 55%;           /* Tenta ir para o meio */
+    transform: translateY(-50%); /* Corrige para ficar exatamente no centro vertical */
+
+    /* Se a logo for muito grande, ela pode tapar coisas, então ajustamos o z-index */
+    z-index: 10;
+}
+
+/* Removemos o fundo translúcido antigo da logo-area para ficar mais limpo */
+.logo-area {
+    padding: 0;
+    background-color: transparent;
+}
+
+.container {
+    background-color: white;
+    max-width: 800px; /* Mais largo para caber as colunas */
+    width: 90%;
+    margin: 50px auto;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+/* Centraliza o título */
+h1 {
+    text-align: center;
+    color: #333;
+}
+
+/* Deixa o texto do rótulo em cima do campo e mais escurinho */
+label {
+    display: block; /* Ocupa a linha inteira */
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #555;
+}
+
+/* Estiliza a caixa de texto */
+input {
+    width: 100%; /* Estica a caixa até a borda do container */
+    padding: 10px; /* Espaço interno para o texto respirar */
+    margin-bottom: 15px; /* Espaço embaixo de cada campo */
+    border: 1px solid #ccc; /* Borda cinza suave */
+    border-radius: 4px; /* Cantinhos levemente arredondados */
+    box-sizing: border-box; /* Garante que o tamanho não estoure o container */
+}
+
+button {
+    padding: 14px;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer; /* Transforma a seta numa mãozinha */
+    transition: background-color 0.3s; /* Suaviza a mudança de cor */
+}
+
+#btnSalvar {
+    width: 100%;
+    background-color: #28a745; /* Um verde "sucesso" */
+    color: white;
+}
+
+#btnSalvar:hover {
+    background-color: #218838; /* Fica mais escuro quando o mouse passa por cima */
+}
+
+/* Botão de Info (Cor Azul Turquesa) */
+.btn-extra {
+    background-color: #17a2b8; /* Um azul bonito */
+    color: white;
+    margin-right: 5px; /* Espacinho para não colar no botão Editar */
+}
+
+.btn-extra:hover {
+    background-color: #138496; /* Escurece ao passar o mouse */
+}
+
+/* Estilo específico para o botão de Editar */
+.btn-editar {
+    background-color: #007bff; /* Azul */
+    margin-right: 5px; /* Um pequeno espaço para não colar no botão de excluir */
+}
+
+.btn-editar:hover {
+    background-color: #0069d9; /* Azul mais escuro ao passar o mouse */
+}
+
+/* Estilo específico para o botão de Excluir */
+.btn-excluir {
+    background-color: #dc3545; /* Vermelho */
+}
+
+.btn-excluir:hover {
+    background-color: #c82333; /* Vermelho mais escuro ao passar o mouse */
+}
+
+/* Estilo geral da tabela */
+table {
+    width: 100%; /* Ocupa toda a largura do container */
+    border-collapse: collapse; /* Transforma bordas duplas numa linha fina e única */
+    margin-top: 20px; /* Dá um espaço entre o formulário e a lista */
+}
+
+/* Cabeçalho da tabela com cor de destaque */
+th {
+    background-color: #343a40; /* Um cinza chumbo bem moderno */
+    color: white; /* Texto branco para contrastar */
+    padding: 12px;
+    text-align: left;
+}
+
+th:last-child {
+    text-align: right;
+    width: 12%;
+}
+
+/* Mantemos o padding nas células normais */
+td {
+    padding: 12px;
+    border-bottom: 1px solid #ddd;
+}
+
+td:last-child {
+    text-align: right;
+    white-space: nowrap;
+}
+
+/* Efeito Zebra: linhas pares ficam cinza-claro */
+tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+/* Efeito Hover: a linha escurece um pouco ao passar o mouse */
+tr:hover {
+    background-color: #e2e6ea;
+}
+
+/* Grid de 2 colunas */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+/* Campos que ocupam a largura total */
+.full-width {
+    grid-column: span 2;
+}
+
+/* Ajuste para telemóveis (volta a 1 coluna) */
+@media (max-width: 600px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+    .full-width {
+        grid-column: span 1;
+    }
+}
+
+.coluna-preco {
+    width: 1%; /* Truque: obriga a coluna a ser o menor possível (sem cortar o texto) */
+    white-space: nowrap; /* Impede que o "R$ 100,00" quebre em duas linhas */
+}
+
+/* O fundo escuro (invisível por padrão) */
+.modal-fundo {
+    display: none; /* O segredo! Começa escondido */
+    position: fixed;
+    z-index: 1000; /* Fica por cima de tudo */
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5); /* Preto com 50% de transparência */
+}
+
+/* A caixa branca */
+.modal-caixa {
+    background-color: white;
+
+    /* Posicionamento no Centro */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+    /* REMOVIDO: margin: 0; (não é necessário com o transform) */
+
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3); /* Sombra ligeiramente maior para destaque */
+
+    /* --- AS MUDANÇAS MÁGICAS --- */
+
+    /* 1. Largura Inteligente: Ocupa 90% em telemóveis, mas trava em 600px no PC */
+    width: 90%;
+    max-width: 600px;
+
+    /* 2. Altura Inteligente: Nunca ultrapassa 85% da altura do ecrã */
+    max-height: 85vh;
+
+    /* 3. Scroll Automático: Se o texto for maior que a caixa, aparece a barra de lado */
+    overflow-y: auto;
+}
+
+/* O X para fechar */
+.fechar {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.fechar:hover {
+    color: black;
+}
+
+/* --- ESTILO DO INTERRUPTOR (TOGGLE) --- */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+    margin-right: 10px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc; /* Cinzento quando desligado */
+    transition: .4s;
+    border-radius: 34px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+/* Quando ativado (checked) fica verde */
+input:checked + .slider {
+    background-color: #2196F3; /* Azul bonito */
+}
+
+input:checked + .slider:before {
+    transform: translateX(26px); /* Move a bolinha para a direita */
+}
