@@ -2,233 +2,201 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Sistema da Família</title>
+    <title>Novo Cliente</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <header class="cabecalho-topo">
     <nav class="links-navegacao">
-        <a href="/index.html" style="text-decoration: underline;">Gerir Clientes</a>
-        <a href="/produtos.html">Gerir Produtos</a>
+        <a href="/index.html" style="text-decoration: underline;">Novo Cliente</a>
+        <a href="/clientes-lista.html">Lista de Clientes</a> <a href="/produtos.html">Gerir Produtos</a>
         <a href="/estoque.html">Gerir Estoque</a>
         <a href="/vendas.html">Vendas (PDV)</a>
     </nav>
-
     <div class="logo-area">
-        <img src="/img/logo.png" alt="Logo Rinamed" class="logo-imagem">
+        <img src="/img/logo.png" alt="Logo" class="logo-imagem">
     </div>
 </header>
 
 <br>
 
 <div class="container">
-    <h1 id="tituloPagina"> Cadastro de Cliente</h1>
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h1 id="tituloPagina">Cadastro de Cliente</h1>
+        <a href="/clientes-lista.html" style="color: #007bff; text-decoration: none; font-weight: bold;">Ver Lista ➡</a>
+    </div>
 
     <input type="hidden" id="campoId">
 
-    <div>
-        <label>Nome:</label>
-        <input type="text" id="campoNome">
-    </div>
-    <div>
-        <label>CPF:</label>
-        <input type="text" id="campoCpf">
-    </div>
-
-    <div>
-        <label>Numero:</label>
-        <input type="text" id="campoNumero">
-    </div>
-
-    <div>
-        <label>Endereco:</label>
-        <input type="text" id="campoEndereco">
+    <div class="tab-container">
+        <button class="tab-botao ativo" onclick="mudarTab('FISICA')" id="tabFisica">Pessoa Física</button>
+        <button class="tab-botao" onclick="mudarTab('JURIDICA')" id="tabJuridica">Pessoa Jurídica</button>
     </div>
 
     <br>
-    <button id="btnSalvar" onclick="cadastrar()">Salvar Cliente</button>
+
+    <div class="full-width">
+        <label>Nome Completo / Razão Social:</label>
+        <input type="text" id="campoNome">
+    </div>
+
+    <div class="form-row">
+        <div>
+            <label>Contato (Tel/Cel):</label>
+            <input type="text" id="campoContato" maxlength="15">
+        </div>
+        <div>
+            <label>Email:</label>
+            <input type="email" id="campoEmail">
+        </div>
+    </div>
+
+    <div id="areaFisica">
+        <div class="full-width">
+            <label>CPF:</label>
+            <input type="text" id="campoCpf" maxlength="14" placeholder="000.000.000-00">
+        </div>
+    </div>
+
+    <div id="areaJuridica" class="hidden">
+        <div class="address-row">
+            <div>
+                <label>CNPJ:</label>
+                <input type="text" id="campoCnpj" maxlength="18">
+            </div>
+            <div>
+                <label>Insc. Estadual:</label>
+                <input type="text" id="campoIE">
+            </div>
+            <div>
+                <label>Insc. Municipal:</label>
+                <input type="text" id="campoIM">
+            </div>
+        </div>
+    </div>
+
+    <h3 style="border-bottom: 1px solid #ccc; padding-bottom: 10px; margin-top: 30px; margin-bottom: 20px; color: #555;">📍 Endereço</h3>
+
+    <div class="address-row">
+        <div>
+            <label>CEP:</label>
+            <input type="text" id="campoCep" maxlength="9" onblur="buscarCep(this.value)">
+        </div>
+        <div>
+            <label>Cidade:</label>
+            <input type="text" id="campoCidade">
+        </div>
+        <div>
+            <label>Estado (UF):</label>
+            <input type="text" id="campoEstado" maxlength="2">
+        </div>
+    </div>
+
+    <div class="street-row">
+        <div>
+            <label>Logradouro (Rua/Av):</label>
+            <input type="text" id="campoEndereco">
+        </div>
+        <div>
+            <label>Número:</label>
+            <input type="text" id="campoNumeroEnd">
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div>
+            <label>Bairro:</label>
+            <input type="text" id="campoBairro">
+        </div>
+        <div>
+            <label>Complemento:</label>
+            <input type="text" id="campoComplemento">
+        </div>
+    </div>
+
+    <br>
+    <button id="btnSalvar" onclick="cadastrar()" style="width: 100%; height: 50px; font-size: 18px;">Salvar Cliente</button>
 </div>
-
-<div style="margin-top: 30px; margin-bottom: 20px; display: flex;">
-    <input type="text" id="campoBuscaCliente" placeholder="Buscar por Nome ou CPF..."
-           onkeyup="if(event.keyCode === 13) carregarClientes()">
-    <button onclick="carregarClientes()"
-            style="width: auto; padding: 10px 15px; margin-left: 10px; background-color: #6c757d; color: white; border-radius: 4px;">
-        🔍 Buscar
-    </button>
-</div>
-
-<hr> <h2>Lista de Clientes</h2>
-
-<table border="1" style="width: 100%; text-align: left;">
-    <thead>
-    <tr>
-        <th>Nome</th>
-        <th>CPF</th>
-        <th>Telefone</th>
-        <th>Endereço</th>
-        <th>Ações</th>
-    </tr>
-    </thead>
-    <tbody id="tabelaClientes">
-    </tbody>
-</table>
 
 <script>
+    let tipoAtual = 'FISICA';
 
-    let clientesAtuais = [];
+    function mudarTab(tipo) {
+        tipoAtual = tipo;
+        document.getElementById('tabFisica').className = tipo === 'FISICA' ? 'tab-botao ativo' : 'tab-botao';
+        document.getElementById('tabJuridica').className = tipo === 'JURIDICA' ? 'tab-botao ativo' : 'tab-botao';
+        if (tipo === 'FISICA') {
+            document.getElementById('areaFisica').classList.remove('hidden');
+            document.getElementById('areaJuridica').classList.add('hidden');
+        } else {
+            document.getElementById('areaFisica').classList.add('hidden');
+            document.getElementById('areaJuridica').classList.remove('hidden');
+        }
+    }
 
     function cadastrar() {
-        // 1. Pegar os dados (incluindo o ID escondido)
-        let idDigitado = document.getElementById("campoId").value;
-        let nomeDigitado = document.getElementById("campoNome").value;
-        let cpfDigitado = document.getElementById("campoCpf").value;
-        let numberDigitado = document.getElementById("campoNumero").value;
-        let addressDigitado = document.getElementById("campoEndereco").value;
-
-        cpfDigitado = cpfDigitado.replace(/\D/g, "");
-        numberDigitado = numberDigitado.replace(/\D/g, "");
-
-        if (nomeDigitado == ""){
-            alert("O nome é obrigatório!");
-            return;
-        }
-        if (cpfDigitado == ""){
-            alert("O CPF é obrigatório!");
-            return;
-        }
-        if (cpfDigitado.length != 11){
-            alert("O CPF Esta incorreto");
-            return;
-        }
-        if (numberDigitado == ""){
-            alert("O Numero é obrigatório");
-            return;
-        }
-        if ( numberDigitado.length != 11){
-            alert("O Numero esta incorreto");
-            return;
-        }
-
-        // 2. Montar o pacote de dados
+        // Validações básicas e limpeza
         let dados = {
-            id: idDigitado ? idDigitado : null, // O truque do ID!
-            name: nomeDigitado,
-            cpf: cpfDigitado,
-            number: numberDigitado,
-            address: addressDigitado
+            id: null, // Cadastro novo é sempre null
+            tipo: tipoAtual,
+            nome: document.getElementById("campoNome").value,
+            contato: document.getElementById("campoContato").value,
+            email: document.getElementById("campoEmail").value,
+            cep: document.getElementById("campoCep").value,
+            endereco: document.getElementById("campoEndereco").value,
+            numeroEndereco: document.getElementById("campoNumeroEnd").value,
+            bairro: document.getElementById("campoBairro").value,
+            complemento: document.getElementById("campoComplemento").value,
+            cidade: document.getElementById("campoCidade").value,
+            estado: document.getElementById("campoEstado").value,
         };
 
-        // 3. Enviar para o Java
+        if(!dados.nome || !dados.contato) { alert("Nome e Contato são obrigatórios!"); return; }
+
+        if (tipoAtual === 'FISICA') {
+            dados.cpf = document.getElementById("campoCpf").value;
+            if(!dados.cpf) { alert("CPF Obrigatório"); return; }
+        } else {
+            dados.cnpj = document.getElementById("campoCnpj").value;
+            dados.inscricaoEstadual = document.getElementById("campoIE").value;
+            dados.inscricaoMunicipal = document.getElementById("campoIM").value;
+            if(!dados.cnpj) { alert("CNPJ Obrigatório"); return; }
+        }
+
         fetch('/cliente', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(dados)
-        })
-            .then(resposta => resposta.text()) // O Java devolve um texto de sucesso
-            .then(texto => {
-                alert(texto); // Avisa o usuário
-
-                limparFormulario();
-                carregarClientes();
-            })
-            .catch(erro => console.error('Erro:', erro));
+        }).then(resp => resp.text()).then(msg => {
+            alert(msg);
+            location.reload(); // Recarrega para limpar
+        });
     }
 
-    function carregarClientes() {
-        let termoBusca = document.getElementById("campoBuscaCliente").value;
-        let url = '/clientes';
-
-        if (termoBusca) {
-            // Adiciona o parâmetro de busca à URL
-            url = `/clientes?q=${encodeURIComponent(termoBusca)}`;
-        }
-
-        fetch(url) // Usa a URL com ou sem o parâmetro 'q'
-            .then(resposta => resposta.json())
-            .then(listaClientes => {
-
-                clientesAtuais = listaClientes
-
-                let tabela = document.getElementById("tabelaClientes");
-                tabela.innerHTML = "";
-                listaClientes.forEach(cliente => {
-                    tabela.innerHTML += `
-                    <tr>
-                        <td>${cliente.name}</td>
-                        <td>${cliente.cpf}</td>
-                        <td>${cliente.number}</td>
-                        <td>${cliente.address}</td>
-                        <td>
-                           <button class="btn-editar" onclick="prepararEdicao(${cliente.id})">Editar</button>
-                           <button class="btn-excluir" onclick="excluir(${cliente.id})">Excluir</button>
-                        </td>
-                    </tr>
-                `;
-                });
-            })
-            .catch(erro => console.error('Erro:', erro));
-    }
-
-    carregarClientes();
-
-    function excluir(id) {
-        // É sempre bom confirmar antes de apagar!
-        if (confirm("Tens a certeza que queres eliminar este cliente?")) {
-
-            fetch(`/cliente/${id}`, {
-                method: 'DELETE'
-            })
-                .then(resposta => {
-                    if (resposta.ok) {
-                        alert("Cliente removido com sucesso!");
-                        // Recarregamos a lista para ver a tabela atualizada sem o cliente
-                        carregarClientes();
-                    } else {
-                        alert("Ops! Algo correu mal.");
-                    }
-                })
-                .catch(erro => console.error('Erro:', erro));
+    // Busca CEP
+    function buscarCep(cep) {
+        let cleanCep = cep.replace(/\D/g, '');
+        if(cleanCep.length === 8) {
+            fetch(`https://viacep.com.br/ws/${cleanCep}/json/`).then(r => r.json()).then(d => {
+                if(!d.erro) {
+                    document.getElementById('campoEndereco').value = d.logradouro;
+                    document.getElementById('campoBairro').value = d.bairro;
+                    document.getElementById('campoCidade').value = d.localidade;
+                    document.getElementById('campoEstado').value = d.uf;
+                    document.getElementById('campoNumeroEnd').focus();
+                }
+            });
         }
     }
 
-    function prepararEdicao(id) {
-        // Rastreadores:
-        console.log("Tentando editar o ID:", id);
-        console.log("Minha memória de clientes tem:", clientesAtuais);
-
-        // Acha o cliente na lista pelo ID
-        let clienteEncontrado = clientesAtuais.find(c => c.id == id);
-
-        console.log("O resultado da busca foi:", clienteEncontrado);
-
-        if (clienteEncontrado) {
-            document.getElementById("tituloPagina").innerText = "Editar Cliente";
-            document.getElementById("btnSalvar").innerText = "Atualizar";
-            document.getElementById("campoId").value = clienteEncontrado.id;
-            document.getElementById("campoNome").value = clienteEncontrado.name;
-            document.getElementById("campoCpf").value = clienteEncontrado.cpf;
-            document.getElementById("campoNumero").value = clienteEncontrado.number;
-            document.getElementById("campoEndereco").value = clienteEncontrado.address;
-        }
-    }
-
-    function limparFormulario() {
-        // 1. Resetar o visual (Título e Botão)
-        document.getElementById("tituloPagina").innerText = "Cadastro de Cliente";
-        document.getElementById("btnSalvar").innerText = "Salvar Cliente";
-        document.getElementById("campoId").value = "";
-        document.getElementById("campoId").value = "";
-        document.getElementById("campoNome").value = "";
-        document.getElementById("campoCpf").value = "";
-        document.getElementById("campoNumero").value = "";
-        document.getElementById("campoEndereco").value = "";
-    }
-
+    // Máscaras (Simplificado)
+    document.addEventListener("DOMContentLoaded", function() {
+        document.getElementById("campoContato").oninput = function() { this.value = this.value.replace(/\D/g,"").replace(/^(\d{2})(\d)/g,"($1) $2").replace(/(\d)(\d{4})$/,"$1-$2").substring(0, 15); }
+        document.getElementById("campoCpf").oninput = function() { this.value = this.value.replace(/\D/g,"").replace(/(\d{3})(\d)/,"$1.$2").replace(/(\d{3})(\d)/,"$1.$2").replace(/(\d{3})(\d{1,2})$/,"$1-$2").substring(0, 14); }
+        document.getElementById("campoCnpj").oninput = function() { this.value = this.value.replace(/\D/g,"").replace(/^(\d{2})(\d)/,"$1.$2").replace(/^(\d{2})\.(\d{3})(\d)/,"$1.$2.$3").replace(/\.(\d{3})(\d)/,".$1/$2").replace(/(\d{4})(\d)/,"$1-$2").substring(0, 18); }
+        document.getElementById("campoCep").oninput = function() { this.value = this.value.replace(/\D/g,"").replace(/^(\d{5})(\d)/,"$1-$2").substring(0, 9); }
+    });
 </script>
-
 </body>
 </html>

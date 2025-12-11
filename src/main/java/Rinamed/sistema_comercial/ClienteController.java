@@ -1,12 +1,9 @@
 package Rinamed.sistema_comercial;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.validation.FieldError;
-import org.springframework.web.bind.MethodArgumentNotValidException;
+
 import org.springframework.web.bind.annotation.*;
-import jakarta.validation.Valid;
-import java.util.ArrayList;
+
 import java.util.List;
 
 @RestController
@@ -15,26 +12,17 @@ public class ClienteController {
     @Autowired
     private ClienteRepository repository;
 
-    @GetMapping("/clientes")
-    // MODIFICADO: Aceita um parâmetro de pesquisa 'q' (opcional)
-    public List<Cliente> listar(@RequestParam(required = false) String q) {
-        if (q != null && !q.isEmpty()) {
-            // Se houver termo, busca por nome OU CPF
-            return repository.findByNameContainingIgnoreCaseOrCpfContaining(q, q);
-        }
-        return repository.findAll(); // Senão, devolve tudo
+    // Endpoint para buscar por tipo (Física ou Jurídica)
+    @GetMapping("/clientes/tipo/{tipo}")
+    public List<Cliente> listarPorTipo(@PathVariable String tipo) {
+        return repository.findByTipo(tipo.toUpperCase());
     }
 
-    @GetMapping("/clienteserver")
-    public String dizerOla() {
-        return "Olá! O sistema está online.";
-    }
-
+    // Mantemos o salvar genérico, ele aceita o JSON completo
     @PostMapping("/cliente")
-    public String cadastrar(@Valid @RequestBody Cliente novoCliente) {
+    public String cadastrar(@RequestBody Cliente novoCliente) {
         repository.save(novoCliente);
-        System.out.println("Chegou um cliente: " + novoCliente.getName());
-        return "Cliente " + novoCliente.getName() + " recebido com sucesso!";
+        return "Cliente salvo com sucesso!";
     }
 
     @DeleteMapping("/cliente/{id}")
@@ -42,4 +30,9 @@ public class ClienteController {
         repository.deleteById(id);
     }
 
+    // Método de busca antigo (opcional manter se quiser buscar todos misturados)
+    @GetMapping("/clientes")
+    public List<Cliente> listarTodos() {
+        return repository.findAll();
+    }
 }

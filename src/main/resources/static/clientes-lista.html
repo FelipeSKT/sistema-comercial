@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Lista de Clientes</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Estilos específicos da Lista */
+        .container { max-width: 1000px; } /* Lista precisa ser mais larga */
+
+        .painel-filtros {
+            display: flex; gap: 10px; margin-bottom: 20px;
+            background: #f8f9fa; padding: 15px; border-radius: 5px; border: 1px solid #ddd;
+        }
+
+        /* Modal (Janela Sobreposta) */
+        .modal {
+            display: none; /* Escondido por padrão */
+            position: fixed;
+            z-index: 1000;
+            left: 0; top: 0;
+            width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.5); /* Fundo preto transparente */
+            overflow: auto; /* Permite rolar se a tela for pequena */
+        }
+
+        .modal-conteudo {
+            background-color: #fefefe;
+            margin: 5% auto; /* 5% do topo */
+            padding: 30px;
+            border: 1px solid #888;
+            width: 90%;
+            max-width: 800px; /* Largura do formulário */
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            position: relative;
+        }
+
+        .fechar-modal {
+            color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer;
+        }
+        .fechar-modal:hover { color: black; }
+
+        /* Reaproveitando Grid do index para o Modal */
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 10px; }
+        .address-row { display: grid; grid-template-columns: 1.5fr 3fr 1fr; gap: 20px; margin-bottom: 10px; }
+        .street-row { display: grid; grid-template-columns: 4fr 1fr; gap: 20px; margin-bottom: 10px; }
+        .full-width { grid-column: 1 / -1; margin-bottom: 10px; }
+        input { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+
+        /* Abas Visuais da Lista */
+        .tabs-lista { display: flex; border-bottom: 2px solid #ccc; margin-bottom: 20px; }
+        .tab-item { padding: 10px 20px; cursor: pointer; font-weight: bold; color: #555; }
+        .tab-item.active { border-bottom: 4px solid #007bff; color: #007bff; }
+
+        .btn-editar { background-color: #17a2b8; color: white; padding: 5px 10px; text-decoration: none; border-radius: 4px; font-size: 14px; }
+        .btn-excluir { background-color: #dc3545; color: white; padding: 5px 10px; border-radius: 4px; font-size: 14px; }
+
+        @media (max-width: 768px) { .form-row, .address-row, .street-row { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+<header class="cabecalho-topo">
+    <nav class="links-navegacao">
+        <a href="/index.html">Novo Cliente</a>
+        <a href="/clientes-lista.html" style="text-decoration: underline;">Lista de Clientes</a>
+        <a href="/produtos.html">Gerir Produtos</a>
+        <a href="/estoque.html">Gerir Estoque</a>
+        <a href="/vendas.html">Vendas (PDV)</a>
+    </nav>
+    <div class="logo-area">
+        <img src="/img/logo.png" alt="Logo" class="logo-imagem">
+    </div>
+</header>
+
+<div class="container">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h1>Gerir Clientes</h1>
+        <a href="/index.html" style="background-color: #28a745; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px;">+ Novo Cliente</a>
+    </div>
+
+    <div class="painel-filtros">
+        <input type="text" id="campoBusca" placeholder="🔍 Buscar por Nome, CPF ou CNPJ..." onkeyup="filtrarTabela()">
+    </div>
+
+    <div class="tabs-lista">
+        <div class="tab-item active" onclick="mostrarLista('FISICA')" id="tabListFisica">Pessoa Física</div>
+        <div class="tab-item" onclick="mostrarLista('JURIDICA')" id="tabListJuridica">Pessoa Jurídica</div>
+    </div>
+
+    <div id="listaFisica">
+        <table border="1">
+            <thead>
+            <tr style="background-color: #343a40; color: white;">
+                <th>Nome</th> <th>CPF</th> <th>Contato</th> <th>Cidade</th> <th>Ações</th>
+            </tr>
+            </thead>
+            <tbody id="tbodyFisica"></tbody>
+        </table>
+    </div>
+
+    <div id="listaJuridica" style="display: none;">
+        <table border="1">
+            <thead>
+            <tr style="background-color: #343a40; color: white;">
+                <th>Razão Social</th> <th>CNPJ</th> <th>Contato</th> <th>Cidade</th> <th>Ações</th>
+            </tr>
+            </thead>
+            <tbody id="tbodyJuridica"></tbody>
+        </table>
+    </div>
+</div>
+
+<div id="modalEdicao" class="modal">
+    <div class="modal-conteudo">
+        <span class="fechar-modal" onclick="fecharModal()">&times;</span>
+        <h2 id="tituloModal">Editar Cliente</h2>
+        <hr><br>
+
+        <input type="hidden" id="editId">
+        <input type="hidden" id="editTipo">
+
+        <div class="full-width">
+            <label>Nome / Razão Social:</label>
+            <input type="text" id="editNome">
+        </div>
+
+        <div class="form-row">
+            <div><label>Contato:</label><input type="text" id="editContato" maxlength="15"></div>
+            <div><label>Email:</label><input type="text" id="editEmail"></div>
+        </div>
+
+        <div id="divEditCpf" class="full-width">
+            <label>CPF:</label><input type="text" id="editCpf" maxlength="14">
+        </div>
+
+        <div id="divEditPj" class="address-row" style="display:none;">
+            <div><label>CNPJ:</label><input type="text" id="editCnpj" maxlength="18"></div>
+            <div><label>Insc. Est.:</label><input type="text" id="editIE"></div>
+            <div><label>Insc. Mun.:</label><input type="text" id="editIM"></div>
+        </div>
+
+        <h3>Endereço</h3>
+        <div class="address-row">
+            <div><label>CEP:</label><input type="text" id="editCep" onblur="buscarCepModal(this.value)"></div>
+            <div><label>Cidade:</label><input type="text" id="editCidade"></div>
+            <div><label>UF:</label><input type="text" id="editEstado"></div>
+        </div>
+        <div class="street-row">
+            <div><label>Rua:</label><input type="text" id="editEndereco"></div>
+            <div><label>Nº:</label><input type="text" id="editNumero"></div>
+        </div>
+        <div class="form-row">
+            <div><label>Bairro:</label><input type="text" id="editBairro"></div>
+            <div><label>Comp:</label><input type="text" id="editComplemento"></div>
+        </div>
+
+        <button onclick="salvarEdicao()" style="width: 100%; background-color: #007bff; color: white; padding: 15px; border: none; font-size: 16px; border-radius: 5px; cursor: pointer; margin-top: 15px;">Salvar Alterações</button>
+    </div>
+</div>
+
+<script>
+    let clientesCache = [];
+
+    // Carregar dados ao iniciar
+    carregarTodos();
+
+    function carregarTodos() {
+        // Pega TODOS os clientes do banco
+        fetch('/clientes').then(r => r.json()).then(lista => {
+            clientesCache = lista;
+            renderizarTabelas(lista);
+        });
+    }
+
+    function renderizarTabelas(lista) {
+        let tbodyF = document.getElementById("tbodyFisica");
+        let tbodyJ = document.getElementById("tbodyJuridica");
+        tbodyF.innerHTML = "";
+        tbodyJ.innerHTML = "";
+
+        lista.forEach(c => {
+            // Verifica se é Física ou Jurídica (backend manda 'FISICA' ou 'JURIDICA')
+            if (c.tipo === 'FISICA') {
+                tbodyF.innerHTML += `
+                    <tr>
+                        <td>${c.nome}</td>
+                        <td>${c.cpf || '-'}</td>
+                        <td>${c.contato}</td>
+                        <td>${c.cidade}/${c.estado}</td>
+                        <td>
+                            <button class="btn-editar" onclick="abrirModal(${c.id})">Editar / Ver</button>
+                            <button class="btn-excluir" onclick="excluir(${c.id})">🗑️</button>
+                        </td>
+                    </tr>`;
+            } else {
+                tbodyJ.innerHTML += `
+                    <tr>
+                        <td>${c.nome}</td>
+                        <td>${c.cnpj || '-'}</td>
+                        <td>${c.contato}</td>
+                        <td>${c.cidade}/${c.estado}</td>
+                        <td>
+                            <button class="btn-editar" onclick="abrirModal(${c.id})">Editar / Ver</button>
+                            <button class="btn-excluir" onclick="excluir(${c.id})">🗑️</button>
+                        </td>
+                    </tr>`;
+            }
+        });
+    }
+
+    // --- SISTEMA DE ABAS (Física vs Jurídica) ---
+    function mostrarLista(tipo) {
+        if(tipo === 'FISICA') {
+            document.getElementById('listaFisica').style.display = 'block';
+            document.getElementById('listaJuridica').style.display = 'none';
+            document.getElementById('tabListFisica').classList.add('active');
+            document.getElementById('tabListJuridica').classList.remove('active');
+        } else {
+            document.getElementById('listaFisica').style.display = 'none';
+            document.getElementById('listaJuridica').style.display = 'block';
+            document.getElementById('tabListFisica').classList.remove('active');
+            document.getElementById('tabListJuridica').classList.add('active');
+        }
+    }
+
+    // --- MODAL (Janela de Edição) ---
+    function abrirModal(id) {
+        let cliente = clientesCache.find(c => c.id == id);
+        if(!cliente) return;
+
+        // Preenche o modal
+        document.getElementById('editId').value = cliente.id;
+        document.getElementById('editTipo').value = cliente.tipo;
+        document.getElementById('editNome').value = cliente.nome;
+        document.getElementById('editContato').value = cliente.contato;
+        document.getElementById('editEmail').value = cliente.email;
+
+        document.getElementById('editCep').value = cliente.cep;
+        document.getElementById('editCidade').value = cliente.cidade;
+        document.getElementById('editEstado').value = cliente.estado;
+        document.getElementById('editEndereco').value = cliente.endereco;
+        document.getElementById('editNumero').value = cliente.numeroEndereco;
+        document.getElementById('editBairro').value = cliente.bairro;
+        document.getElementById('editComplemento').value = cliente.complemento;
+
+        // Mostra campos específicos
+        if(cliente.tipo === 'FISICA') {
+            document.getElementById('divEditCpf').style.display = 'block';
+            document.getElementById('divEditPj').style.display = 'none';
+            document.getElementById('editCpf').value = cliente.cpf;
+        } else {
+            document.getElementById('divEditCpf').style.display = 'none';
+            document.getElementById('divEditPj').style.display = 'grid'; // Grid para alinhar 3 campos
+            document.getElementById('editCnpj').value = cliente.cnpj;
+            document.getElementById('editIE').value = cliente.inscricaoEstadual;
+            document.getElementById('editIM').value = cliente.inscricaoMunicipal;
+        }
+
+        document.getElementById('modalEdicao').style.display = 'block';
+    }
+
+    function fecharModal() {
+        document.getElementById('modalEdicao').style.display = 'none';
+    }
+
+    // Fechar ao clicar fora
+    window.onclick = function(event) {
+        if (event.target == document.getElementById('modalEdicao')) {
+            fecharModal();
+        }
+    }
+
+    function salvarEdicao() {
+        let tipo = document.getElementById('editTipo').value;
+
+        let dados = {
+            id: document.getElementById('editId').value,
+            tipo: tipo,
+            nome: document.getElementById('editNome').value,
+            contato: document.getElementById('editContato').value,
+            email: document.getElementById('editEmail').value,
+
+            cep: document.getElementById('editCep').value,
+            cidade: document.getElementById('editCidade').value,
+            estado: document.getElementById('editEstado').value,
+            endereco: document.getElementById('editEndereco').value,
+            numeroEndereco: document.getElementById('editNumero').value,
+            bairro: document.getElementById('editBairro').value,
+            complemento: document.getElementById('editComplemento').value
+        };
+
+        if(tipo === 'FISICA') {
+            dados.cpf = document.getElementById('editCpf').value;
+        } else {
+            dados.cnpj = document.getElementById('editCnpj').value;
+            dados.inscricaoEstadual = document.getElementById('editIE').value;
+            dados.inscricaoMunicipal = document.getElementById('editIM').value;
+        }
+
+        fetch('/cliente', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(dados)
+        }).then(r => r.text()).then(msg => {
+            alert("Atualizado com sucesso!");
+            fecharModal();
+            carregarTodos(); // Atualiza a tabela no fundo
+        });
+    }
+
+    function excluir(id) {
+        if(confirm("Tem certeza que deseja excluir?")) {
+            fetch(`/cliente/${id}`, {method:'DELETE'}).then(() => carregarTodos());
+        }
+    }
+
+    function filtrarTabela() {
+        let termo = document.getElementById('campoBusca').value.toLowerCase();
+        let filtrados = clientesCache.filter(c =>
+            c.nome.toLowerCase().includes(termo) ||
+            (c.cpf && c.cpf.includes(termo)) ||
+            (c.cnpj && c.cnpj.includes(termo))
+        );
+        renderizarTabelas(filtrados);
+    }
+
+    function buscarCepModal(cep) {
+        // Mesma função de busca CEP, mas apontando para os IDs do Modal (edit...)
+        let cleanCep = cep.replace(/\D/g, '');
+        if(cleanCep.length === 8) {
+            fetch(`https://viacep.com.br/ws/${cleanCep}/json/`).then(r => r.json()).then(d => {
+                if(!d.erro) {
+                    document.getElementById('editEndereco').value = d.logradouro;
+                    document.getElementById('editBairro').value = d.bairro;
+                    document.getElementById('editCidade').value = d.localidade;
+                    document.getElementById('editEstado').value = d.uf;
+                }
+            });
+        }
+    }
+</script>
+
+</body>
+</html>

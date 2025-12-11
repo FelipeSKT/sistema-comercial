@@ -5,11 +5,12 @@ body {
 
 .container {
     background-color: white;
-    width: 400px; /* Largura fixa */
-    margin: 50px auto; /* 50px em cima/baixo, AUTO nas laterais (centraliza) */
-    padding: 20px; /* Espaço interno para o texto não colar na borda */
-    border-radius: 8px; /* Arredonda os cantos */
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1); /* Sombra suave para dar profundidade */
+    max-width: 900px; /* Aumentei de 400px/800px para 900px para caber bem as colunas */
+    width: 95%;
+    margin: 40px auto;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
 /* Centraliza o título */
@@ -27,13 +28,9 @@ label {
 }
 
 /* Estiliza a caixa de texto */
-input {
-    width: 100%; /* Estica a caixa até a borda do container */
-    padding: 10px; /* Espaço interno para o texto respirar */
-    margin-bottom: 15px; /* Espaço embaixo de cada campo */
-    border: 1px solid #ccc; /* Borda cinza suave */
-    border-radius: 4px; /* Cantinhos levemente arredondados */
-    box-sizing: border-box; /* Garante que o tamanho não estoure o container */
+input, select {
+    width: 100%;
+    box-sizing: border-box;
 }
 
 button {
@@ -162,4 +159,71 @@ tr:hover {
 .logo-area {
     padding: 0;
     background-color: transparent;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px; /* Espaço entre as colunas */
+    margin-bottom: 15px;
+}
+
+.street-row {
+    display: grid;
+    grid-template-columns: 4fr 1fr; /* Rua ocupa muito espaço, Número ocupa pouco */
+    gap: 20px;
+    margin-bottom: 15px;
+}
+
+.full-width {
+    grid-column: 1 / -1; /* Ocupa de ponta a ponta */
+    margin-bottom: 15px;
+}
+
+@media (max-width: 768px) {
+    .form-row, .address-row, .street-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+.tab-container {
+    display: flex;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #ddd;
+}
+.tab-botao {
+    padding: 10px 20px;
+    cursor: pointer;
+    background: #f1f1f1;
+    border: none;
+    outline: none;
+    font-weight: bold;
+    font-size: 16px;
+    border-radius: 5px 5px 0 0;
+    margin-right: 5px;
+}
+.tab-botao.ativo {
+    background-color: #d9534f; /* Vermelho do tema */
+    color: white;
+}
+.hidden {
+    display: none;
+}
+.secao-lista {
+    margin-top: 40px;
+    border-top: 2px solid #333;
+    padding-top: 20px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 15px;
+}
+.address-row {
+    display: grid;
+    grid-template-columns: 1.5fr 3fr 1fr; /* CEP, Cidade, Estado */
+    gap: 20px;
+    margin-bottom: 15px;
 }
