@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>Venda Varejo</title>
+    <link rel="stylesheet" href="vendas.css">
+</head>
+<body>
+
+<header class="cabecalho-topo">
+    <nav class="links-navegacao">
+        <a href="/index.html">Gerir Clientes</a>
+        <a href="/produtos.html">Gerir Produtos</a>
+        <a href="/estoque.html">Gerir Estoque</a>
+        <a href="/vendas.html" style="text-decoration: underline;">Vendas (PDV)</a>
+        <a href="/historico-vendas.html">📜 Histórico</a>
+    </nav>
+    <div class="logo-area">
+        <img src="/img/logo.png" alt="Logo Rinamed" class="logo-imagem">
+    </div>
+</header>
+
+<div class="layout-vendas">
+    <div class="area-produtos">
+        <h1>Catálogo de Produtos</h1>
+
+        <input type="text" id="campoBusca" placeholder="🔍 Buscar produto ou categoria..."
+               onkeyup="filtrarCatalogo()">
+
+        <div id="containerCatalogo">
+        </div>
+    </div>
+
+    <div class="area-carrinho">
+        <h2>🛒 Carrinho de Compras</h2>
+        <div id="listaCarrinho" class="carrinho-items">
+            <p style="text-align: center; color: #777;">O carrinho está vazio.</p>
+        </div>
+
+        <div class="resumo-total">
+            <h3>Total: <span id="valorTotal">R$ 0,00</span></h3>
+            <button class="btn-finalizar" onclick="finalizarVenda()">✅ Finalizar Venda</button>
+        </div>
+    </div>
+</div>
+
+<script src="vendas.js"></script>
+</body>
+</html>

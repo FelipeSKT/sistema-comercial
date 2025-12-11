@@ -1,0 +1,161 @@
+/* Importamos o básico que já tinhas */
+body {
+    background-color: #f0f2f5;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.cabecalho-topo {
+    background-color: #d9534f; /* Teu vermelho padrão */
+    padding: 0 40px;
+    height: 80px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
+    flex-shrink: 0; /* Cabeçalho não encolhe */
+}
+
+.links-navegacao a {
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+    margin-right: 20px;
+    font-size: 16px;
+}
+
+.logo-imagem { height: 250px; width: auto; } /* Ajuste para caber melhor */
+
+/* Layout Dividido */
+.layout-vendas {
+    display: flex;
+    flex: 1; /* Ocupa o resto da altura da tela */
+    overflow: hidden; /* Remove rolagem da página inteira */
+}
+
+/* Área da Esquerda (Produtos) */
+.area-produtos {
+    flex: 2; /* Ocupa 66% da tela */
+    padding: 20px;
+    overflow-y: auto; /* Rolagem interna */
+    border-right: 1px solid #ccc;
+}
+
+/* Área da Direita (Carrinho) */
+.area-carrinho {
+    flex: 1; /* Ocupa 33% da tela */
+    background-color: white;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: -2px 0 5px rgba(0,0,0,0.1);
+}
+
+/* Estilo das PASTAS (Accordion) */
+.pasta-categoria {
+    background-color: #343a40; /* Cinza escuro */
+    color: white;
+    cursor: pointer;
+    padding: 15px;
+    width: 100%;
+    text-align: left;
+    border: none;
+    outline: none;
+    font-size: 16px;
+    margin-top: 5px;
+    border-radius: 5px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.pasta-categoria:hover {
+    background-color: #23272b;
+}
+
+/* Conteúdo da Pasta (Escondido por padrão) */
+.conteudo-pasta {
+    display: none; /* Oculto */
+    padding: 10px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    margin-bottom: 10px;
+}
+
+/* Cartão do Produto dentro da pasta */
+.card-produto {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+    padding: 10px 0;
+}
+
+.btn-add {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.btn-add:hover { background-color: #218838; }
+
+/* Carrinho */
+.carrinho-items {
+    flex: 1; /* Ocupa o espaço disponível */
+    overflow-y: auto;
+    border: 1px solid #f0f0f0;
+    margin-bottom: 10px;
+    padding: 10px;
+}
+
+.item-carrinho {
+    background-color: #f8f9fa;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 8px;
+    border-left: 4px solid #17a2b8;
+}
+
+.resumo-total {
+    background-color: #e9ecef;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.btn-finalizar {
+    width: 100%;
+    padding: 15px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    font-size: 18px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.btn-finalizar:hover { background-color: #0056b3; }
+
+/* Input de busca */
+#campoBusca {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+/* Switch Toggle (Copiado do teu estoque.css) */
+.switch { position: relative; display: inline-block; width: 40px; height: 20px; margin-left: 10px; vertical-align: middle;}
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
+.slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+input:checked + .slider { background-color: #17a2b8; }
+input:checked + .slider:before { transform: translateX(20px); }

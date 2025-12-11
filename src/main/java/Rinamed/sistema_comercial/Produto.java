@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Column;
 
     @Entity
     public class Produto {
@@ -26,6 +27,18 @@ import jakarta.persistence.Id;
 
         private Integer quantidadeEstoque = 0; // Começa a zero por defeito
         private Integer estoqueMinimo =0;
+
+        @Column(length = 500) // Aumentamos o tamanho pois URLs podem ser grandes
+        private String imageUrl;
+
+        public String getImageUrl() {
+            return imageUrl;
+        }
+
+        public void setImageUrl(String imageUrl) {
+            this.imageUrl = imageUrl;
+        }
+
 
         public Integer getEstoqueMinimo() {
             return estoqueMinimo;

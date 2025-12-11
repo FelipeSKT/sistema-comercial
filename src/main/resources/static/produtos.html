@@ -10,8 +10,9 @@
 <header class="cabecalho-topo">
     <nav class="links-navegacao">
         <a href="/index.html">Gerir Clientes</a>
-        <a href="/produtos.html">Gerir Produtos</a>
+        <a href="/produtos.html" style="text-decoration: underline;">Gerir Produtos</a>
         <a href="/estoque.html">Gerir Estoque</a>
+        <a href="/vendas.html">Vendas (PDV)</a>
     </nav>
 
     <div class="logo-area">
@@ -72,6 +73,12 @@
             <label>Descrição:</label>
             <input type="text" id="campoDescricao">
         </div>
+
+        <div class="full-width">
+            <label>URL da Imagem (Link):</label>
+            <input type="text" id="campoImagem" placeholder="Ex: https://site.com/foto.jpg ou /img/foto-local.png">
+        </div>
+
     </div>
 
     <br>
@@ -119,6 +126,7 @@
         <p><strong>Preço/Embalagem:</strong> <span id="mPrecoE"></span></p>
         <p><strong>Preço/Unidade:</strong> <span id="mPrecoU"></span></p>
         <p><strong>Descrição:</strong> <span id="mDescricao"></span></p>
+        <img id="mImagemPreview">
 
 
         <br>
@@ -142,6 +150,7 @@
         let precoEmbalagemDigitado = document.getElementById("campoPrecoEmbalagem").value;
         let precoUnidadeDigitado = document.getElementById("campoPrecoUnidade").value;
         let descricaoDigitado = document.getElementById("campoDescricao").value;
+        let imagemDigitada = document.getElementById("campoImagem").value;
 
         if (nomeDigitado == ""){
             alert("O nome é obrigatório!");
@@ -186,7 +195,8 @@
             unitPackSize: unidadeEmbalagemDigitado,
             packPrice: precoEmbalagemDigitado,
             unitPrice: precoUnidadeDigitado,
-            description: descricaoDigitado
+            description: descricaoDigitado,
+            imageUrl: imagemDigitada
         };
 
         // 3. Enviar para o Java
@@ -292,6 +302,7 @@
             document.getElementById("campoPrecoEmbalagem").value = produtoEncontrado.packPrice;
             document.getElementById("campoPrecoUnidade").value = produtoEncontrado.unitPrice;
             document.getElementById("campoDescricao").value = produtoEncontrado.description;
+            document.getElementById("campoImagem").value = produtoEncontrado.imageUrl ? produtoEncontrado.imageUrl : "";
         }
     }
 
@@ -308,6 +319,7 @@
         document.getElementById("campoPrecoEmbalagem").value = "";
         document.getElementById("campoPrecoUnidade").value = "";
         document.getElementById("campoDescricao").value = "";
+        document.getElementById("campoImagem").value = "";
     }
 
     function verDetalhes(id) {
@@ -326,6 +338,7 @@
             document.getElementById('mPrecoE').innerText = formatador.format(produto.packPrice);
             document.getElementById('mPrecoU').innerText = formatador.format(produto.unitPrice);
             document.getElementById('mDescricao').innerText = produto.description;
+            document.getElementById('mImagemPreview').innerText = produto.imageUrl;
 
             // 3. Mostrar a janela (mudamos de 'none' para 'block')
             document.getElementById('modalOverlay').style.display = 'block';

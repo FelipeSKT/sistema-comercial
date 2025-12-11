@@ -1,0 +1,112 @@
+/* Configuração Geral da Página */
+body {
+    background-color: #f4f6f9; /* Um cinza levemente azulado, profissional */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    color: #333;
+}
+
+/* --- Cabeçalho (Mantendo a identidade visual vermelha) --- */
+.cabecalho-topo {
+    background-color: #d9534f;
+    height: 80px;
+    padding: 0 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    color: white;
+}
+
+.links-navegacao a {
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 16px;
+    padding: 10px 15px;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+}
+
+.links-navegacao a:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.logo-imagem {
+    height: 250px;
+    width: auto;
+}
+
+/* --- Container Principal --- */
+.container {
+    max-width: 1000px; /* Largura boa para relatórios */
+    margin: 40px auto;
+    background-color: white;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.05);
+}
+
+h1 {
+    text-align: center;
+    color: #444;
+    margin-bottom: 30px;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 10px;
+}
+
+/* --- Tabela de Relatório --- */
+table {
+    width: 100%;
+    border-collapse: collapse; /* Remove espaços entre bordas */
+    margin-top: 20px;
+    font-size: 15px;
+}
+
+/* Cabeçalho da Tabela */
+thead tr {
+    background-color: #343a40; /* Cinza escuro */
+    color: white;
+    text-align: left;
+}
+
+th, td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #ddd;
+}
+
+/* Efeito Zebra (Linhas alternadas) */
+tbody tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+/* Efeito ao passar o mouse */
+tbody tr:hover {
+    background-color: #e9ecef;
+}
+
+/* Colunas de valores alinhadas à direita */
+td:nth-child(5), td:nth-child(6),
+th:nth-child(5), th:nth-child(6) {
+    text-align: right;
+}
+
+/* --- Rodapé da Tabela (Total) --- */
+tfoot tr {
+    background-color: #28a745 !important; /* Verde Sucesso */
+    color: white;
+    font-size: 18px;
+}
+
+tfoot td {
+    border-top: 2px solid #1e7e34;
+}
+
+/* Ajustes para quando a tabela está vazia */
+.msg-vazia {
+    text-align: center;
+    padding: 20px;
+    color: #777;
+    font-style: italic;
+}

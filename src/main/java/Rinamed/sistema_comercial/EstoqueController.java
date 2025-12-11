@@ -16,12 +16,14 @@ public class EstoqueController {
 
     @PostMapping("/movimentacao")
     public String registrar(@RequestBody DadosMovimentacao dados) {
+        // Passamos 'null' no final pois ajuste manual de estoque não tem "preço de venda" obrigatório
         return estoqueService.registrarMovimentacao(
                 dados.produtoId(),
                 dados.tipo(),
                 dados.quantidade(),
                 dados.descricao(),
-                dados.porEmbalagem()
+                dados.porEmbalagem(),
+                null
         );
     }
 

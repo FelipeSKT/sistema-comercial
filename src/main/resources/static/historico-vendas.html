@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>Histórico de Vendas</title>
+    <link rel="stylesheet" href="historico-vendas.css">
+</head>
+<body>
+
+<header class="cabecalho-topo">
+    <nav class="links-navegacao">
+        <a href="/vendas.html">⬅ Voltar ao PDV</a>
+        <a href="/historico-vendas.html" class="ativo">Histórico de Vendas</a>
+    </nav>
+    <div class="logo-area">
+        <img src="/img/logo.png" alt="Logo" class="logo-imagem">
+    </div>
+</header>
+
+<div class="container">
+    <h1>Relatório de Vendas (Varejo)</h1>
+
+    <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 20px; border: 1px solid #ddd; display: flex; flex-wrap: wrap; gap: 15px; align-items: flex-end;">
+
+        <div>
+            <label style="display: block; font-size: 13px; font-weight: bold; margin-bottom: 5px;">Data Início:</label>
+            <input type="date" id="filtroInicio" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+        </div>
+
+        <div>
+            <label style="display: block; font-size: 13px; font-weight: bold; margin-bottom: 5px;">Data Fim:</label>
+            <input type="date" id="filtroFim" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+        </div>
+
+        <div>
+            <button onclick="buscarPorDatas()" style="padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">
+                🔍 Filtrar Período
+            </button>
+            <button onclick="limparFiltros()" style="padding: 10px 15px; background-color: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; margin-left: 5px;">
+                Limpar
+            </button>
+        </div>
+
+        <div style="margin-left: auto;">
+            <label style="display: block; font-size: 13px; font-weight: bold; margin-bottom: 5px;">Filtrar na Lista:</label>
+            <input type="text" id="filtroTexto" placeholder="Nome, Categoria..." onkeyup="filtrarTabelaLocalmente()"
+                   style="padding: 8px; width: 200px; border: 1px solid #ccc; border-radius: 4px;">
+        </div>
+    </div>
+
+    <table>
+        <thead>
+        <tr>
+            <th>Data</th>
+            <th>Produto</th>
+            <th>Categoria</th> <th>Qtd</th>
+            <th>Tipo</th>
+            <th>Valor Unit.</th>
+            <th>Total Item</th>
+        </tr>
+        </thead>
+        <tbody id="tabelaHistorico">
+        <tr><td colspan="7" class="msg-vazia">Carregando...</td></tr>
+        </tbody>
+        <tfoot>
+        <tr>
+            <td colspan="6" style="text-align: right; padding-right: 20px;">TOTAL FILTRADO:</td>
+            <td id="totalGeralHistorico" style="font-weight: bold;">R$ 0,00</td>
+        </tr>
+        </tfoot>
+    </table>
+</div>
+
+<script>
+    let listaOriginal = []; // Guarda os dados para o filtro de texto funcionar sem ir ao servidor
+
+    // 1. Carregar dados (com ou sem datas)
+    function carregarVendas(inicio = "", fim = "") {
+        let url = '/vendas/historico';
+
+        // Se tiver datas, adiciona à URL
+        if (inicio && fim) {
+            url += `?inicio=${inicio}&fim=${fim}`;
+        }
+
+        fetch(url)
+            .then(r => r.json())
+            .then(lista => {
+                listaOriginal = lista; // Salva na memória
+                renderizarTabela(lista);
+            })
+            .catch(err => {
+                console.error(err);
+                document.getElementById("tabelaHistorico").innerHTML = '<tr><td colspan="7" class="msg-vazia">Erro ao carregar dados.</td></tr>';
+            });
+    }
+
+    // 2. Renderizar (Desenhar) a tabela
+    function renderizarTabela(lista) {
+        let tabela = document.getElementById("tabelaHistorico");
+        let totalGeral = 0;
+        tabela.innerHTML = "";
+
+        if (lista.length === 0) {
+            tabela.innerHTML = '<tr><td colspan="7" class="msg-vazia">Nenhum registro encontrado para este período.</td></tr>';
+            document.getElementById("totalGeralHistorico").innerText = "R$ 0,00";
+            return;
+        }
+
+        lista.forEach(mov => {
+            let data = new Date(mov.dataHora).toLocaleString('pt-BR');
+            let nomeProd = mov.produto ? mov.produto.name : "Produto Deletado";
+
+            // Tenta pegar a categoria, se o produto existir
+            let categoria = (mov.produto && mov.produto.mainCategory) ? mov.produto.mainCategory : "-";
+
+            let valorUnit = mov.valorUnitario ? mov.valorUnitario : 0;
+            let totalItem = valorUnit * mov.quantidade;
+
+            totalGeral += totalItem;
+
+            tabela.innerHTML += `
+                <tr>
+                    <td>${data}</td>
+                    <td>${nomeProd}</td>
+                    <td><small style="color:#666">${categoria}</small></td>
+                    <td>${mov.quantidade}</td>
+                    <td><span style="background:#e2e6ea; padding:2px 6px; border-radius:4px; font-size:12px;">${mov.tipo}</span></td>
+                    <td>${valorUnit.toLocaleString('pt-BR', {style:'currency', currency:'BRL'})}</td>
+                    <td style="font-weight:bold;">${totalItem.toLocaleString('pt-BR', {style:'currency', currency:'BRL'})}</td>
+                </tr>
+            `;
+        });
+
+        document.getElementById("totalGeralHistorico").innerText =
+            totalGeral.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+    }
+
+    // 3. Botão Filtrar (Backend)
+    function buscarPorDatas() {
+        let inicio = document.getElementById("filtroInicio").value;
+        let fim = document.getElementById("filtroFim").value;
+
+        if (!inicio || !fim) {
+            alert("Por favor, selecione a data inicial e a data final.");
+            return;
+        }
+
+        // Verifica se a data final é menor que a inicial
+        if (inicio > fim) {
+            alert("A data final não pode ser anterior à data inicial!");
+            return;
+        }
+
+        carregarVendas(inicio, fim);
+    }
+
+    function limparFiltros() {
+        document.getElementById("filtroInicio").value = "";
+        document.getElementById("filtroFim").value = "";
+        document.getElementById("filtroTexto").value = "";
+        carregarVendas(); // Recarrega tudo
+    }
+
+    // 4. Filtro de Texto (Local / Frontend) - Para "Verificar por Categoria"
+    function filtrarTabelaLocalmente() {
+        let termo = document.getElementById("filtroTexto").value.toLowerCase();
+
+        if (!termo) {
+            renderizarTabela(listaOriginal);
+            return;
+        }
+
+        let filtrados = listaOriginal.filter(mov => {
+            let nome = mov.produto ? mov.produto.name.toLowerCase() : "";
+            let categoria = mov.produto ? mov.produto.mainCategory.toLowerCase() : "";
+
+            return nome.includes(termo) || categoria.includes(termo);
+        });
+
+        renderizarTabela(filtrados);
+    }
+
+    // Carrega tudo ao abrir a página
+    carregarVendas();
+
+</script>
+
+</body>
+</html>

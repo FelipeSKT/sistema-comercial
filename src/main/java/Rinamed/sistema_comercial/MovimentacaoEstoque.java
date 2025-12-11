@@ -2,6 +2,7 @@ package Rinamed.sistema_comercial;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.math.BigDecimal; // Importante!
 
 @Entity
 public class MovimentacaoEstoque {
@@ -21,16 +22,26 @@ public class MovimentacaoEstoque {
     @ManyToOne // Liga esta movimentação ao Produto
     private Produto produto;
 
+    private BigDecimal valorUnitario;
     // Construtor vazio (obrigatório para o JPA)
     public MovimentacaoEstoque() {}
 
     // Construtor prático para usarmos depois
-    public MovimentacaoEstoque(Produto produto, TipoMovimentacao tipo, Integer quantidade, String descricao) {
+    public MovimentacaoEstoque(Produto produto, TipoMovimentacao tipo, Integer quantidade, String descricao, BigDecimal valorUnitario) {
         this.produto = produto;
         this.tipo = tipo;
         this.quantidade = quantidade;
         this.descricao = descricao;
-        this.dataHora = LocalDateTime.now(); // Grava a hora atual automaticamente
+        this.valorUnitario = valorUnitario; // Recebe o valor
+        this.dataHora = LocalDateTime.now();
+    }
+
+    public BigDecimal getValorUnitario() {
+        return valorUnitario;
+    }
+
+    public void setValorUnitario(BigDecimal valorUnitario) {
+        this.valorUnitario = valorUnitario;
     }
 
     public Produto getProduto() {

@@ -2,6 +2,7 @@ package Rinamed.sistema_comercial;
 
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -10,6 +11,9 @@ public class ProdutoController {
 
     @Autowired
     private ProdutoRepository repository;
+
+    @Autowired
+    private MovimentacaoEstoqueRepository movimentacaoRepository;
 
     @GetMapping("/produtos")
     // MODIFICADO: Aceita um parâmetro de pesquisa 'q' (opcional)
@@ -34,7 +38,12 @@ public class ProdutoController {
     }
 
     @DeleteMapping("/produto/{id}")
+    @Transactional // Garante que as duas exclusões ocorram juntas (ou nenhuma)
     public void excluirProduto(@PathVariable Long id) {
+        // 1. Primeiro, limpamos o histórico deste produto (remove as amarras)
+        movimentacaoRepository.deleteByProdutoId(id);
+
+        // 2. Agora o produto está livre para ser excluído
         repository.deleteById(id);
     }
 }
