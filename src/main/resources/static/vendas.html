@@ -20,6 +20,33 @@
     </div>
 </header>
 
+<div style="padding: 20px; background: white; border-bottom: 1px solid #ddd; display: flex; align-items: center; gap: 10px;">
+    <label>👤 Cliente do Pedido:</label>
+
+    <div style="position: relative; width: 400px;">
+        <input type="text" id="inputNomeCliente"
+               placeholder="Digite o nome, CPF ou CNPJ..."
+               autocomplete="off"
+               onkeyup="filtrarClientesUI()"
+               style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+
+        <input type="hidden" id="idClienteSelecionado">
+
+        <div id="listaSugestoes" class="sugestoes-box"></div>
+    </div>
+
+    <button id="btnLimparCliente" onclick="limparSelecaoCliente()" style="display: none; padding: 5px 10px; border: 1px solid #dc3545; background: white; color: #dc3545; cursor: pointer; border-radius: 4px;">❌</button>
+
+    <button id="btnVerHistorico" onclick="abrirModalHistorico()"
+            style="display: none; margin-left: 10px; padding: 10px 15px; background-color: #17a2b8; color: white; border: none; border-radius: 4px; cursor: pointer;">
+        📜 Ver Últimas Compras
+    </button>
+
+    <div style="margin-left: auto;">
+        <a href="/pedidos-lista.html" class="btn-extra" style="text-decoration: none; padding: 10px;">Ver Pedidos Pendentes</a>
+    </div>
+</div>
+
 <div class="layout-vendas">
     <div class="area-produtos">
         <h1>Catálogo de Produtos</h1>
@@ -39,11 +66,39 @@
 
         <div class="resumo-total">
             <h3>Total: <span id="valorTotal">R$ 0,00</span></h3>
-            <button class="btn-finalizar" onclick="finalizarVenda()">✅ Finalizar Venda</button>
+
+            <button class="btn-finalizar" onclick="finalizarVenda('VENDA')">✅ Finalizar (Baixa Imediata)</button>
+
+            <button class="btn-finalizar" style="background-color: #6f42c1; margin-top: 10px;" onclick="finalizarVenda('PEDIDO')">📝 Salvar como Pedido</button>
         </div>
     </div>
 </div>
 
 <script src="vendas.js"></script>
+
+<div id="modalHistoricoCliente" class="modal-fundo" style="display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);">
+    <div class="modal-caixa" style="background: white; margin: 5% auto; padding: 20px; width: 60%; max-width: 800px; border-radius: 8px; position: relative;">
+        <span onclick="fecharModalHistorico()" style="float: right; font-size: 28px; cursor: pointer; font-weight: bold;">&times;</span>
+
+        <h2>Histórico de: <span id="nomeClienteHist">...</span></h2>
+        <hr>
+
+        <div style="max-height: 400px; overflow-y: auto;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                <tr style="background: #f1f1f1; text-align: left;">
+                    <th style="padding: 10px;">Data</th>
+                    <th style="padding: 10px;">Status</th>
+                    <th style="padding: 10px;">Total</th>
+                    <th style="padding: 10px;">Ação</th>
+                </tr>
+                </thead>
+                <tbody id="listaHistoricoBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
 </body>
 </html>

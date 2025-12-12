@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Pedidos Pendentes</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Estilos específicos para esta tabela */
+        .status-pendente {
+            background-color: #ffc107;
+            color: #333;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .btn-confirmar {
+            background-color: #28a745;
+            color: white;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .btn-confirmar:hover { background-color: #218838; }
+
+        .btn-detalhes {
+            background-color: #17a2b8;
+            color: white;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 5px;
+        }
+        .btn-detalhes:hover { background-color: #138496; }
+
+        /* Modal de Itens */
+        .modal-fundo {
+            display: none; position: fixed; z-index: 1000; left: 0; top: 0;
+            width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);
+        }
+        .modal-caixa {
+            background-color: white; margin: 10% auto; padding: 20px;
+            width: 50%; max-width: 600px; border-radius: 8px; position: relative;
+        }
+    </style>
+</head>
+<body>
+
+<header class="cabecalho-topo">
+    <nav class="links-navegacao">
+        <a href="/vendas.html">⬅ Voltar ao PDV</a>
+        <a href="/pedidos-lista.html" style="text-decoration: underline;">Pedidos Pendentes</a>
+        <a href="/historico-vendas.html">Histórico Geral</a>
+    </nav>
+    <div class="logo-area">
+        <img src="/img/logo.png" alt="Logo" class="logo-imagem">
+    </div>
+</header>
+
+<div class="container" style="max-width: 1000px;">
+    <h1>Gerir Pedidos Pendentes</h1>
+    <p style="text-align: center; color: #666;">Aqui ficam os pedidos salvos que ainda não foram pagos/retirados.</p>
+
+    <div style="text-align: right; margin-bottom: 10px;">
+        <button onclick="carregarPedidos()" class="btn-detalhes">🔄 Atualizar Lista</button>
+    </div>
+
+    <table border="1">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Data/Hora</th>
+            <th>Cliente</th>
+            <th>Valor Total</th>
+            <th>Status</th>
+            <th style="text-align: center;">Ações</th>
+        </tr>
+        </thead>
+        <tbody id="tabelaPedidos">
+        <tr><td colspan="6" style="text-align:center;">Carregando...</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<div id="modalItens" class="modal-fundo">
+    <div class="modal-caixa">
+        <span onclick="fecharModal()" style="float: right; font-size: 28px; cursor: pointer;">&times;</span>
+        <h2>Itens do Pedido #<span id="lblIdPedido"></span></h2>
+        <h4 id="lblClientePedido" style="color: #555;"></h4>
+        <hr>
+
+        <table style="width: 100%; margin-top: 10px;">
+            <thead style="background: #eee;">
+            <tr>
+                <th style="padding: 5px;">Produto</th>
+                <th style="padding: 5px;">Qtd</th>
+                <th style="padding: 5px;">Preço</th>
+                <th style="padding: 5px; text-align: right;">Subtotal</th>
+            </tr>
+            </thead>
+            <tbody id="listaItensBody"></tbody>
+        </table>
+
+        <div style="margin-top: 20px; text-align: right;">
+            <h3>Total: <span id="lblTotalModal"></span></h3>
+        </div>
+
+        <div style="margin-top: 20px; display: flex; justify-content: space-between;">
+            <button onclick="fecharModal()" style="background: #6c757d; color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer;">Fechar</button>
+            <button id="btnConfirmarModal" onclick="" style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold;">✅ Confirmar Recebimento</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let pedidosCache = [];
+
+    // Carregar ao iniciar
+    carregarPedidos();
+
+    function carregarPedidos() {
+        fetch('/pedidos/pendentes')
+            .then(r => r.json())
+            .then(lista => {
+                pedidosCache = lista;
+                renderizarTabela(lista);
+            })
+            .catch(err => {
+                console.error(err);
+                document.getElementById("tabelaPedidos").innerHTML = '<tr><td colspan="6" style="text-align:center; color:red;">Erro ao carregar pedidos.</td></tr>';
+            });
+    }
+
+    function renderizarTabela(lista) {
+        let tbody = document.getElementById("tabelaPedidos");
+        tbody.innerHTML = "";
+
+        if (lista.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px;">Nenhum pedido pendente encontrado.</td></tr>';
+            return;
+        }
+
+        // Ordenar do mais antigo para o mais recente (ou vice-versa, conforme preferência)
+        lista.sort((a, b) => new Date(b.dataCriacao) - new Date(a.dataCriacao));
+
+        lista.forEach(p => {
+            let data = new Date(p.dataCriacao).toLocaleString('pt-BR');
+            let total = p.valorTotal.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+
+            tbody.innerHTML += `
+                <tr>
+                    <td>${p.id}</td>
+                    <td>${data}</td>
+                    <td>${p.cliente ? p.cliente.nome : 'Cliente Removido'}</td>
+                    <td><strong>${total}</strong></td>
+                    <td><span class="status-pendente">${p.status}</span></td>
+                    <td style="text-align: center;">
+                        <button class="btn-detalhes" onclick="verDetalhes(${p.id})">📄 Itens</button>
+                        <button class="btn-confirmar" onclick="confirmarPedido(${p.id})">💰 Receber</button>
+                        <button class="btn-excluir" onclick="cancelarPedido(${p.id})" style="margin-left: 5px;">🗑️</button>
+                    </td>
+                </tr>
+            `;
+        });
+    }
+
+    // --- Ações ---
+
+    function confirmarPedido(id) {
+        if(!confirm("Confirmar o recebimento deste pedido?\n\nIsso dará baixa no estoque AGORA.")) return;
+
+        fetch(`/pedidos/${id}/confirmar`, { method: 'POST' })
+            .then(r => r.text())
+            .then(msg => {
+                alert(msg);
+                carregarPedidos(); // Recarrega a lista
+            });
+    }
+
+    function cancelarPedido(id) {
+        if(!confirm("Tem certeza que deseja CANCELAR (excluir) este pedido?")) return;
+
+        fetch(`/pedidos/${id}`, { method: 'DELETE' })
+            .then(() => {
+                carregarPedidos();
+            });
+    }
+
+    // --- Modal de Detalhes ---
+
+    function verDetalhes(id) {
+        let pedido = pedidosCache.find(p => p.id == id);
+        if(!pedido) return;
+
+        document.getElementById("lblIdPedido").innerText = pedido.id;
+        document.getElementById("lblClientePedido").innerText = pedido.cliente ? pedido.cliente.nome : "Cliente Desconhecido";
+
+        let tbody = document.getElementById("listaItensBody");
+        tbody.innerHTML = "";
+
+        pedido.itens.forEach(item => {
+            let subtotal = item.quantidade * item.precoVendido;
+            let tipo = item.porEmbalagem ? " (Emb)" : " (Unid)";
+
+            tbody.innerHTML += `
+                <tr>
+                    <td style="padding: 8px; border-bottom: 1px solid #eee;">${item.produto.name}</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #eee;">${item.quantidade}${tipo}</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #eee;">R$ ${item.precoVendido}</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right;">${subtotal.toLocaleString('pt-BR', {style:'currency', currency:'BRL'})}</td>
+                </tr>
+            `;
+        });
+
+        document.getElementById("lblTotalModal").innerText = pedido.valorTotal.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+
+        // Configura o botão de confirmar dentro do modal também
+        document.getElementById("btnConfirmarModal").onclick = function() {
+            confirmarPedido(id);
+            fecharModal();
+        };
+
+        document.getElementById("modalItens").style.display = "block";
+    }
+
+    function fecharModal() {
+        document.getElementById("modalItens").style.display = "none";
+    }
+
+    // Fechar ao clicar fora
+    window.onclick = function(event) {
+        if (event.target == document.getElementById('modalItens')) {
+            fecharModal();
+        }
+    }
+</script>
+
+</body>
+</html>

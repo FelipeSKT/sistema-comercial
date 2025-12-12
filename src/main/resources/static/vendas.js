@@ -1,6 +1,29 @@
 let todosProdutos = [];
 let carrinho = [];
+let todosClientes = []; // Nova lista global para clientes
+let historicoCache = [];
 
+document.addEventListener("DOMContentLoaded", () => {
+    carregarProdutos();
+    carregarClientes();
+});
+
+function carregarProdutos() {
+    fetch('/produtos')
+        .then(r => r.json())
+        .then(lista => {
+            todosProdutos = lista;
+            renderizarCatalogo(lista);
+        });
+}
+
+function carregarClientes() {
+    fetch('/clientes')
+        .then(r => r.json())
+        .then(lista => {
+            todosClientes = lista; // Guarda na memória para pesquisa rápida
+        });
+}
 // 1. Carregar produtos ao iniciar
 fetch('/produtos')
     .then(r => r.json())
@@ -8,6 +31,75 @@ fetch('/produtos')
         todosProdutos = lista;
         renderizarCatalogo(lista);
     });
+
+function filtrarClientesUI() {
+    const termo = document.getElementById("inputNomeCliente").value.toLowerCase();
+    const box = document.getElementById("listaSugestoes");
+
+    // Se digitou pouco, esconde
+    if (termo.length < 1) {
+        box.style.display = 'none';
+        return;
+    }
+
+    // Filtra por Nome, CPF ou CNPJ
+    const filtrados = todosClientes.filter(c =>
+        c.nome.toLowerCase().includes(termo) ||
+        (c.cpf && c.cpf.includes(termo)) ||
+        (c.cnpj && c.cnpj.includes(termo))
+    );
+
+    box.innerHTML = "";
+    if (filtrados.length === 0) {
+        box.innerHTML = '<div class="item-sugestao" style="cursor: default; color: #999;">Nenhum cliente encontrado</div>';
+    } else {
+        filtrados.forEach(c => {
+            let doc = c.tipo === 'FISICA' ? c.cpf : c.cnpj;
+            let div = document.createElement("div");
+            div.className = "item-sugestao";
+            div.innerHTML = `<strong>${c.nome}</strong><small>${doc || 'Sem Documento'}</small>`;
+
+            // Ao clicar na sugestão
+            div.onclick = () => selecionarCliente(c);
+
+            box.appendChild(div);
+        });
+    }
+
+    box.style.display = 'block';
+}
+
+function selecionarCliente(cliente) {
+    // Preenche os campos
+    document.getElementById("inputNomeCliente").value = cliente.nome;
+    document.getElementById("idClienteSelecionado").value = cliente.id;
+
+    // UI: Trava o campo para parecer selecionado e mostra botão limpar
+    document.getElementById("inputNomeCliente").disabled = true;
+    document.getElementById("inputNomeCliente").style.backgroundColor = "#e9ecef";
+    document.getElementById("btnLimparCliente").style.display = "block";
+
+    // Esconde a lista
+    document.getElementById("listaSugestoes").style.display = 'none';
+    document.getElementById("btnVerHistorico").style.display = "inline-block";
+}
+
+function limparSelecaoCliente() {
+    document.getElementById("inputNomeCliente").value = "";
+    document.getElementById("idClienteSelecionado").value = "";
+    document.getElementById("inputNomeCliente").disabled = false;
+    document.getElementById("inputNomeCliente").style.backgroundColor = "white";
+    document.getElementById("btnLimparCliente").style.display = "none";
+    document.getElementById("inputNomeCliente").focus();
+    document.getElementById("btnVerHistorico").style.display = "none";
+}
+
+document.addEventListener('click', function(e) {
+    if (!document.getElementById('inputNomeCliente').contains(e.target)) {
+        document.getElementById('listaSugestoes').style.display = 'none';
+    }
+});
+
 
 // 2. Renderizar o Catálogo em "Pastas"
 function renderizarCatalogo(lista) {
@@ -210,34 +302,81 @@ function alterarQtd(index, novaQtd) {
 }
 
 // 5. Finalizar Venda
-function finalizarVenda() {
+// No início do arquivo, adicione:
+fetch('/clientes').then(r => r.json()).then(lista => {
+    let select = document.getElementById("selectCliente");
+    lista.forEach(c => {
+        let opt = document.createElement("option");
+        opt.value = c.id;
+        opt.innerText = c.nome;
+        select.appendChild(opt);
+    });
+});
+
+// Modifique a função finalizarVenda:
+function finalizarVenda(tipo) {
     if (carrinho.length === 0) {
         alert("O carrinho está vazio!");
         return;
     }
 
-    if (!confirm("Confirmar a venda e dar baixa no estoque?")) return;
+    // MUDANÇA AQUI: Pegamos o valor do input hidden, não mais do select
+    let clienteId = document.getElementById("idClienteSelecionado").value;
+    let nomeCliente = document.getElementById("inputNomeCliente").value;
 
-    // Prepara os dados para o Java
-    const dadosParaEnvio = carrinho.map(item => ({
-        produtoId: item.produto.id,
-        quantidade: item.quantidade,
-        porEmbalagem: item.porEmbalagem,
-        precoVendido: item.precoUnitario // Envia o preço (original ou editado)
-    }));
+    // Se for Pedido, EXIGE cliente
+    if (tipo === 'PEDIDO') {
+        if (!clienteId) {
+            alert("Para criar um pedido, você DEVE pesquisar e selecionar um cliente no topo da página!");
+            document.getElementById("inputNomeCliente").focus();
+            return;
+        }
 
-    fetch('/venda/finalizar', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(dadosParaEnvio)
-    })
-        .then(r => r.text())
-        .then(msg => {
+        if (!confirm(`Salvar pedido para o cliente abaixo?\n\n👤 ${nomeCliente}\n\nO estoque NÃO será baixado agora.`)) return;
+
+        const dadosPedido = {
+            clienteId: clienteId,
+            itens: carrinho.map(item => ({
+                produtoId: item.produto.id,
+                quantidade: item.quantidade,
+                porEmbalagem: item.porEmbalagem,
+                precoVendido: item.precoUnitario
+            }))
+        };
+
+        fetch('/pedidos/criar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(dadosPedido)
+        }).then(r => r.text()).then(msg => {
             alert(msg);
-            carrinho = []; // Limpa carrinho
+            carrinho = [];
             atualizarCarrinhoVisual();
-        })
-        .catch(err => console.error(err));
+            limparSelecaoCliente(); // Limpa o cliente selecionado após o pedido
+        });
+
+    } else {
+        // Venda Varejo (Igual ao anterior)
+        if (!confirm("Confirmar a venda e dar baixa no estoque IMEDIATAMENTE?")) return;
+
+        const dadosParaEnvio = carrinho.map(item => ({
+            produtoId: item.produto.id,
+            quantidade: item.quantidade,
+            porEmbalagem: item.porEmbalagem,
+            precoVendido: item.precoUnitario
+        }));
+
+        fetch('/venda/finalizar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(dadosParaEnvio)
+        }).then(r => r.text()).then(msg => {
+            alert(msg);
+            carrinho = [];
+            atualizarCarrinhoVisual();
+            // Não limpamos o cliente aqui necessariamente, pois pode ser venda de balcão sem cliente
+        });
+    }
 }
 
 // Auxiliar apenas para fins de debug ou UI
@@ -253,4 +392,98 @@ function alterarPreco(index, novoValor) {
 
     // Recalcula o total visualmente
     atualizarCarrinhoVisual();
+}
+
+function abrirModalHistorico() {
+    let clienteId = document.getElementById("idClienteSelecionado").value;
+    let nomeCliente = document.getElementById("inputNomeCliente").value;
+
+    if (!clienteId) return;
+
+    document.getElementById("nomeClienteHist").innerText = nomeCliente;
+    document.getElementById("modalHistoricoCliente").style.display = 'block';
+    document.getElementById("listaHistoricoBody").innerHTML = '<tr><td colspan="4">Carregando...</td></tr>';
+
+    // Busca no Backend
+    fetch(`/pedidos/cliente/${clienteId}`)
+        .then(r => r.json())
+        .then(lista => {
+            historicoCache = lista; // Guarda para usar depois
+            renderizarTabelaHistorico(lista);
+        })
+        .catch(e => {
+            console.error(e);
+            document.getElementById("listaHistoricoBody").innerHTML = '<tr><td colspan="4">Erro ao carregar.</td></tr>';
+        });
+}
+
+function renderizarTabelaHistorico(lista) {
+    let tbody = document.getElementById("listaHistoricoBody");
+    tbody.innerHTML = "";
+
+    if (lista.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="padding:15px; text-align:center;">Nenhuma compra anterior encontrada.</td></tr>';
+        return;
+    }
+
+    // Ordena do mais recente para o mais antigo
+    lista.sort((a, b) => new Date(b.dataCriacao) - new Date(a.dataCriacao));
+
+    lista.forEach((pedido, index) => {
+        let data = new Date(pedido.dataCriacao).toLocaleDateString('pt-BR') + ' ' + new Date(pedido.dataCriacao).toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
+        let total = pedido.valorTotal.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+
+        // Resumo dos itens (ex: "Dipirona (2), Paracetamol (1)...")
+        let resumoItens = pedido.itens.map(i => `${i.produto.name} (${i.quantidade})`).join(', ');
+        if(resumoItens.length > 50) resumoItens = resumoItens.substring(0, 50) + "...";
+
+        tbody.innerHTML += `
+            <tr style="border-bottom: 1px solid #ddd;">
+                <td style="padding: 10px;">
+                    <strong>${data}</strong><br>
+                    <small style="color: #666;">${resumoItens}</small>
+                </td>
+                <td style="padding: 10px;">${pedido.status}</td>
+                <td style="padding: 10px; font-weight: bold;">${total}</td>
+                <td style="padding: 10px; text-align: center;">
+                    <button onclick="repetirPedido(${index})" 
+                            style="background-color: #28a745; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer;">
+                        🔄 Repetir
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+}
+
+function repetirPedido(index) {
+    let pedidoAntigo = historicoCache[index];
+
+    if(!confirm("Deseja adicionar os itens deste pedido ao carrinho atual?")) return;
+
+    // Percorre os itens do pedido antigo e adiciona ao carrinho
+    pedidoAntigo.itens.forEach(itemAntigo => {
+        carrinho.push({
+            produto: itemAntigo.produto, // O objeto produto completo que vem do JSON
+            quantidade: itemAntigo.quantidade,
+            porEmbalagem: itemAntigo.porEmbalagem,
+            precoUnitario: itemAntigo.precoVendido // Usa o preço que foi pago na época (ou itemAntigo.produto.unitPrice se quiser atualizar o preço)
+        });
+    });
+
+    atualizarCarrinhoVisual();
+    fecharModalHistorico();
+    alert("Itens adicionados ao carrinho!");
+}
+
+function fecharModalHistorico() {
+    document.getElementById("modalHistoricoCliente").style.display = 'none';
+}
+
+// Fechar se clicar fora
+window.onclick = function(event) {
+    let modal = document.getElementById('modalHistoricoCliente');
+    if (event.target == modal) {
+        fecharModalHistorico();
+    }
 }
